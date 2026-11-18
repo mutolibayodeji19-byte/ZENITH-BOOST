@@ -1,0 +1,99 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ZENITH BOOST</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#080d0b;color:white;font-family:Arial,sans-serif}
+header{padding:22px 7%;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #1b3026}
+.logo{font-size:22px;font-weight:900;color:#27e98a}
+nav a{color:#aaa;text-decoration:none;margin-left:16px;font-size:13px}
+.hero{padding:65px 7% 35px}
+.tag{color:#27e98a;font-size:12px;letter-spacing:3px}
+h1{font-size:42px;margin:15px 0}
+h1 span{color:#27e98a}
+p{color:#9aa99f;line-height:1.7}
+.btn{background:#20d77b;color:#06140c;border:0;padding:14px 22px;border-radius:9px;font-weight:bold;cursor:pointer}
+section{padding:30px 7%}
+h2{font-size:23px}
+.platforms{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.platform{background:#101a14;border:1px solid #20372a;padding:20px 8px;text-align:center;border-radius:12px;cursor:pointer}
+.platform.active{border-color:#27e98a;background:#14251b}
+.panel{background:#101813;border:1px solid #20372a;padding:22px;border-radius:15px;max-width:550px}
+label{display:block;margin:17px 0 8px;color:#a9b9ad;font-size:13px}
+input,select{width:100%;padding:14px;background:#080e0a;border:1px solid #294033;border-radius:8px;color:white}
+.price{font-size:24px;color:#27e98a;font-weight:bold;margin:20px 0}
+button{font-size:14px}
+.panel .btn{width:100%}
+footer{text-align:center;padding:35px;color:#66756b;font-size:12px}
+@media(max-width:550px){h1{font-size:34px}.platforms{grid-template-columns:repeat(2,1fr)}nav a{margin-left:7px}}
+</style>
+</head>
+<body>
+<header>
+<div class="logo">ZENITH BOOST.</div>
+<nav><a href="#services">Services</a><a href="#order">Order</a></nav>
+</header>
+
+<div class="hero">
+<div class="tag">SOCIAL MEDIA GROWTH PLATFORM</div>
+<h1>Grow Your Socials.<br><span>Boost Your Presence.</span></h1>
+<p>Discover social media engagement services in one place. Simple ordering, transparent pricing and order tracking.</p>
+<a href="#order"><button class="btn">Get Started →</button></a>
+</div>
+
+<section id="services">
+<h2>Choose a platform</h2>
+<div class="platforms">
+<div class="platform active" onclick="choose('Instagram',this)">📸<br>Instagram</div>
+<div class="platform" onclick="choose('TikTok',this)">🎵<br>TikTok</div>
+<div class="platform" onclick="choose('Facebook',this)">📘<br>Facebook</div>
+<div class="platform" onclick="choose('YouTube',this)">▶️<br>YouTube</div>
+<div class="platform" onclick="choose('Telegram',this)">✈️<br>Telegram</div>
+<div class="platform" onclick="choose('X',this)">𝕏<br>X</div>
+</div>
+</section>
+
+<section id="order">
+<h2>Place an order</h2>
+<div class="panel">
+<label>Platform</label>
+<input id="platform" value="Instagram" readonly>
+<label>Service</label>
+<select id="service" onchange="calculate()">
+<option>Likes</option>
+<option>Followers</option>
+<option>Comments</option>
+</select>
+<label>Public profile or post URL</label>
+<input id="link" placeholder="https://...">
+<label>Quantity</label>
+<input id="quantity" type="number" min="1" value="100" oninput="calculate()">
+<div class="price" id="price">₦0.00</div>
+<button class="btn" onclick="order()">Continue</button>
+<p id="notice">Pricing and fulfillment will be configured before accepting orders.</p>
+</div>
+</section>
+
+<footer>© 2026 ZENITH BOOST. All rights reserved.</footer>
+
+<script>
+function choose(name,el){
+document.querySelectorAll('.platform').forEach(x=>x.classList.remove('active'));
+el.classList.add('active');
+document.getElementById('platform').value=name;
+}
+function calculate(){
+let q=Math.max(0,Number(document.getElementById('quantity').value)||0);
+document.getElementById('price').textContent='₦'+(q/1000*100).toFixed(2);
+}
+function order(){
+alert('Ordering is not enabled yet. Payment and fulfillment must be configured first.');
+}
+calculate();
+</script>
+</body>
+</html>
