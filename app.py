@@ -1,13 +1,14 @@
-
 import os
 import hmac
+import json
 from datetime import datetime, timezone
 from urllib.parse import urlparse
+from urllib.request import Request, urlopen
+from urllib.error import HTTPError, URLError
 
 from flask import Flask, request, jsonify, send_from_directory, session
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
-
 
 # =========================================================
 # APP CONFIGURATION
@@ -15,10 +16,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__, static_folder=".", static_url_path="")
 
-database_url = os.environ.get(
-    "DATABASE_URL",
-    "sqlite:///zenith_boost.db"
-)
+database_url = os.environ.get("DATABASE_URL", "sqlite:///zenith_boost.db")
 
 if database_url.startswith("postgres://"):
     database_url = database_url.replace(
@@ -28,7 +26,6 @@ elif database_url.startswith("postgresql://"):
     database_url = database_url.replace(
         "postgresql://", "postgresql+psycopg://", 1
     )
-
 
 app.config.update(
     SECRET_KEY=os.environ.get("SECRET_KEY"),
@@ -40,16 +37,14 @@ app.config.update(
     SESSION_COOKIE_SECURE=True
 )
 
-
-# ZENITH BOOST FRONTEND CORS CONFIGURATION
 ALLOWED_FRONTENDS = {
     "https://zenith-boost.onrender.com"
 }
 
+
 @app.after_request
 def add_cors_headers(response):
     origin = request.headers.get("Origin")
-
     if origin in ALLOWED_FRONTENDS:
         response.headers["Access-Control-Allow-Origin"] = origin
         response.headers["Access-Control-Allow-Credentials"] = "true"
@@ -57,14 +52,13 @@ def add_cors_headers(response):
         response.headers["Access-Control-Allow-Headers"] = "Content-Type"
         response.headers["Access-Control-Max-Age"] = "600"
         response.headers["Vary"] = "Origin"
-
     return response
+
 
 if not app.config["SECRET_KEY"]:
     raise RuntimeError("SECRET_KEY environment variable is missing.")
 
 db = SQLAlchemy(app)
-
 
 # =========================================================
 # SERVICE CATALOG
@@ -88,9 +82,9 @@ ALLOWED_DOMAINS = {
     "x": ["x.com", "www.x.com", "twitter.com", "www.twitter.com"]
 }
 
-
 # =========================================================
 # DATABASE MODELS
+# Existing table and column names are retained.
 # =========================================================
 
 class User(db.Model):
@@ -107,9 +101,7 @@ class User(db.Model):
 class Order(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(
-        db.Integer,
-        db.ForeignKey("user.id"),
-        nullable=False
+        db.Integer, db.ForeignKey("user.id"), nullable=False
     )
     platform = db.Column(db.String(30), nullable=False)
     service = db.Column(db.String(30), nullable=False)
@@ -122,14 +114,11 @@ class Order(db.Model):
     )
 
 
-# Separate table: does not alter existing Order columns.
 class PaymentVerification(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     order_id = db.Column(
-        db.Integer,
-        db.ForeignKey("order.id"),
-        unique=True,
-        nullable=False
+        db.Integer, db.ForeignKey("order.id"),
+        unique=True, nullable=False
     )
     status = db.Column(db.String(30), default="Unverified")
     payment_reference = db.Column(db.String(150))
@@ -144,10 +133,8 @@ class PaymentVerification(db.Model):
 class Fulfillment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     order_id = db.Column(
-        db.Integer,
-        db.ForeignKey("order.id"),
-        nullable=False,
-        unique=True
+        db.Integer, db.ForeignKey("order.id"),
+        nullable=False, unique=True
     )
     mode = db.Column(db.String(30), nullable=False)
     status = db.Column(db.String(30), default="Queued")
@@ -179,16 +166,12 @@ class FulfillmentLog(db.Model):
 with app.app_context():
     db.create_all()
 
-
 # =========================================================
 # COMMON HELPERS
 # =========================================================
 
 def response(message, status=200, **extra):
-    return jsonify({
-        "message": message,
-        **extra
-    }), status
+    return jsonify({"message": message, **extra}), status
 
 
 def current_user():
@@ -198,10 +181,8 @@ def current_user():
 
 def require_login():
     user = current_user()
-
     if not user:
         return None, response("Please log in first.", 401)
-
     return user, None
 
 
@@ -233,8 +214,7 @@ def payment_is_verified(order_id):
     payment = PaymentVerification.query.filter_by(
         order_id=order_id
     ).first()
-
-    return payment and payment.status == "Verified"
+    return bool(payment and payment.status == "Verified")
 
 
 def fulfillment_json(task):
@@ -264,16 +244,13 @@ def home():
 def health():
     try:
         db.session.execute(db.text("SELECT 1"))
-
         return jsonify({
             "status": "online",
             "project": "ZENITH BOOST",
             "database": "connected"
         })
-
     except Exception:
         app.logger.exception("Database health check failed")
-
         return jsonify({
             "status": "error",
             "project": "ZENITH BOOST",
@@ -284,6 +261,63 @@ def health():
 @app.route("/api/services")
 def services():
     return jsonify(SERVICES)
+
+
+# =========================================================
+# ZERNIO INTEGRATION
+# This endpoint verifies credentials only. It does not create
+# campaigns, purchase likes, or claim that fulfillment works.
+# =========================================================
+
+@app.route("/api/integrations/zernio/verify", methods=["GET"])
+def verify_zernio():
+    user, error = require_login()
+    if error:
+        return error
+
+    api_key = os.environ.get("ZERNIO_API_KEY")
+    if not api_key:
+        return response("Zernio API key is not configured in Render.", 503)
+
+    req = Request(
+        "https://zernio.com/api/v1/auth/verify",
+        headers={
+            "Authorization": f"Bearer {api_key}",
+            "Accept": "application/json"
+        },
+        method="GET"
+    )
+
+    try:
+        with urlopen(req, timeout=20) as result:
+            payload = json.loads(result.read().decode("utf-8"))
+
+        if payload.get("valid") is True:
+            return jsonify({
+                "provider": "Zernio",
+                "connected": True,
+                "auth_type": payload.get("authType"),
+                "message": "Zernio API authentication successful."
+            })
+
+        return response("Zernio did not validate the supplied credential.", 502)
+
+    except HTTPError as exc:
+        if exc.code == 401:
+            return response("Zernio rejected the API key. Check it in Render.", 502)
+        app.logger.warning("Zernio verification HTTP error: %s", exc.code)
+        return response("Zernio returned an API error.", 502)
+
+    except (URLError, TimeoutError):
+        return response("Could not reach Zernio. Try again later.", 503)
+
+    except (json.JSONDecodeError, UnicodeDecodeError):
+        app.logger.exception("Zernio returned an unreadable response")
+        return response("Zernio returned an unreadable response.", 502)
+
+    except Exception:
+        app.logger.exception("Zernio verification failed")
+        return response("Zernio verification failed.", 500)
 
 
 # =========================================================
@@ -300,16 +334,12 @@ def register():
 
     if not 3 <= len(username) <= 40:
         return response("Username must be 3–40 characters.", 400)
-
     if len(email) > 120 or "@" not in email:
         return response("Enter a valid email.", 400)
-
     if len(password) < 10:
         return response("Password must contain at least 10 characters.", 400)
-
     if User.query.filter_by(username=username).first():
         return response("Username already exists.", 409)
-
     if User.query.filter_by(email=email).first():
         return response("Email already registered.", 409)
 
@@ -318,7 +348,6 @@ def register():
         email=email,
         password=generate_password_hash(password)
     )
-
     db.session.add(user)
     db.session.commit()
 
@@ -335,18 +364,15 @@ def register():
 @app.route("/api/login", methods=["POST"])
 def login():
     data = request.get_json(silent=True) or {}
-
     email = str(data.get("email", "")).strip().lower()
     password = str(data.get("password", ""))
 
     user = User.query.filter_by(email=email).first()
-
     if not user or not check_password_hash(user.password, password):
         return response("Invalid email or password.", 401)
 
     session.clear()
     session["user_id"] = user.id
-
     return response("Login successful.", username=user.username)
 
 
@@ -359,7 +385,6 @@ def logout():
 @app.route("/api/me")
 def me():
     user, error = require_login()
-
     if error:
         return error
 
@@ -378,12 +403,10 @@ def me():
 @app.route("/api/orders", methods=["POST"])
 def create_order():
     user, error = require_login()
-
     if error:
         return error
 
     data = request.get_json(silent=True) or {}
-
     platform = str(data.get("platform", "")).lower()
     service = str(data.get("service", "")).strip()
     link = str(data.get("link", "")).strip()
@@ -395,18 +418,14 @@ def create_order():
 
     if platform not in SERVICES:
         return response("Invalid platform.", 400)
-
     if service not in SERVICES[platform]:
         return response("Invalid service.", 400)
-
     if not 1 <= quantity <= 100000:
         return response("Quantity must be between 1 and 100000.", 400)
-
     if len(link) > 500:
         return response("Link is too long.", 400)
 
     parsed = urlparse(link)
-
     if (
         parsed.scheme != "https"
         or parsed.hostname not in ALLOWED_DOMAINS[platform]
@@ -423,7 +442,6 @@ def create_order():
         quantity=quantity,
         status="Pending"
     )
-
     db.session.add(order)
     db.session.commit()
 
@@ -438,7 +456,6 @@ def create_order():
 @app.route("/api/orders", methods=["GET"])
 def my_orders():
     user, error = require_login()
-
     if error:
         return error
 
@@ -447,12 +464,10 @@ def my_orders():
     ).order_by(Order.created_at.desc()).all()
 
     results = []
-
     for order in orders:
         payment = PaymentVerification.query.filter_by(
             order_id=order.id
         ).first()
-
         task = Fulfillment.query.filter_by(
             order_id=order.id
         ).first()
@@ -482,26 +497,19 @@ def my_orders():
 )
 def verify_payment(order_id):
     error = require_admin()
-
     if error:
         return error
 
     order = db.session.get(Order, order_id)
-
     if not order:
         return response("Order not found.", 404)
 
     data = request.get_json(silent=True) or {}
-
-    reference = str(
-        data.get("payment_reference", "")
-    ).strip()
-
+    reference = str(data.get("payment_reference", "")).strip()
     note = str(data.get("admin_note", "")).strip()
 
     if not reference:
         return response("Payment reference is required.", 400)
-
     if len(reference) > 150:
         return response("Payment reference is too long.", 400)
 
@@ -527,7 +535,6 @@ def verify_payment(order_id):
     )
 
     db.session.commit()
-
     return response(
         "Payment marked as verified. Ensure the transaction was checked externally.",
         order_id=order_id,
@@ -545,44 +552,30 @@ def verify_payment(order_id):
 )
 def route_fulfillment(order_id):
     error = require_admin()
-
     if error:
         return error
 
     order = db.session.get(Order, order_id)
-
     if not order:
         return response("Order not found.", 404)
 
     if not payment_is_verified(order_id):
-        return response(
-            "Payment must be verified before fulfillment.",
-            403
-        )
+        return response("Payment must be verified before fulfillment.", 403)
 
     if Fulfillment.query.filter_by(order_id=order_id).first():
-        return response(
-            "This order already has a fulfillment task.",
-            409
-        )
+        return response("This order already has a fulfillment task.", 409)
 
     data = request.get_json(silent=True) or {}
-
     mode = str(data.get("mode", "")).lower()
     notes = str(data.get("campaign_notes", "")).strip()
 
     if mode not in ["campaign", "provider"]:
-        return response(
-            "Mode must be campaign or provider.",
-            400
-        )
+        return response("Mode must be campaign or provider.", 400)
 
-    # Provider execution is intentionally blocked until
-    # a real provider API has been configured and tested.
     if mode == "provider":
         return response(
-            "Provider integration is not configured yet. "
-            "No provider order has been submitted.",
+            "No compatible fulfillment provider is configured. "
+            "Zernio credential verification alone does not provide fixed-quantity likes or followers.",
             501
         )
 
@@ -592,9 +585,7 @@ def route_fulfillment(order_id):
         status="Queued",
         campaign_notes=notes
     )
-
     order.status = "Queued for Campaign"
-
     db.session.add(task)
 
     log_action(
@@ -604,7 +595,6 @@ def route_fulfillment(order_id):
     )
 
     db.session.commit()
-
     return response(
         "Campaign task queued.",
         201,
@@ -619,7 +609,6 @@ def route_fulfillment(order_id):
 @app.route("/api/engine/queue", methods=["GET"])
 def fulfillment_queue():
     error = require_admin()
-
     if error:
         return error
 
@@ -628,10 +617,8 @@ def fulfillment_queue():
     ).all()
 
     results = []
-
     for task in tasks:
         order = db.session.get(Order, task.order_id)
-
         results.append({
             **fulfillment_json(task),
             "order": {
@@ -655,33 +642,25 @@ def fulfillment_queue():
 )
 def update_fulfillment(task_id):
     error = require_admin()
-
     if error:
         return error
 
     task = db.session.get(Fulfillment, task_id)
-
     if not task:
         return response("Fulfillment task not found.", 404)
 
     data = request.get_json(silent=True) or {}
-
     new_status = str(data.get("status", "")).strip().title()
     notes = str(data.get("campaign_notes", "")).strip()
     evidence_url = str(data.get("evidence_url", "")).strip()
 
     allowed_statuses = [
-        "Queued",
-        "Processing",
-        "Completed",
-        "Partial",
-        "Failed",
-        "Cancelled"
+        "Queued", "Processing", "Completed",
+        "Partial", "Failed", "Cancelled"
     ]
 
     if new_status not in allowed_statuses:
         return response("Invalid fulfillment status.", 400)
-
     if new_status == "Completed" and not notes:
         return response(
             "Completion notes are required before marking completed.",
@@ -690,20 +669,16 @@ def update_fulfillment(task_id):
 
     if evidence_url:
         parsed = urlparse(evidence_url)
-
         if parsed.scheme != "https" or not parsed.hostname:
             return response("Evidence URL must be a valid HTTPS URL.", 400)
 
     task.status = new_status
-
     if notes:
         task.campaign_notes = notes
-
     if evidence_url:
         task.evidence_url = evidence_url
 
     order = db.session.get(Order, task.order_id)
-
     if order:
         order.status = new_status
 
@@ -714,7 +689,6 @@ def update_fulfillment(task_id):
     )
 
     db.session.commit()
-
     return response(
         "Fulfillment task updated.",
         task=fulfillment_json(task)
@@ -731,12 +705,10 @@ def update_fulfillment(task_id):
 )
 def fulfillment_logs(order_id):
     error = require_admin()
-
     if error:
         return error
 
     order = db.session.get(Order, order_id)
-
     if not order:
         return response("Order not found.", 404)
 
