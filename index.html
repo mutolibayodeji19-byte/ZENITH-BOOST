@@ -3,97 +3,492 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ZENITH BOOST</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#080f20">
+<title>ZENITH BOOST — Social Growth Platform</title>
+
 <style>
+:root {
+  --bg:#080f20;
+  --surface:#101b31;
+  --surface2:#14223b;
+  --blue:#287bff;
+  --cyan:#36c9ff;
+  --text:#f4f7ff;
+  --muted:#91a0ba;
+  --border:#243550;
+  --danger:#ff647c;
+  --success:#39dba0;
+}
 *{box-sizing:border-box}
-body{margin:0;background:#080d0b;color:white;font-family:Arial,sans-serif}
-header{padding:22px 7%;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #1b3026}
-.logo{font-size:22px;font-weight:900;color:#27e98a}
-nav a{color:#aaa;text-decoration:none;margin-left:16px;font-size:13px}
-.hero{padding:65px 7% 35px}
-.tag{color:#27e98a;font-size:12px;letter-spacing:3px}
-h1{font-size:42px;margin:15px 0}
-h1 span{color:#27e98a}
-p{color:#9aa99f;line-height:1.7}
-.btn{background:#20d77b;color:#06140c;border:0;padding:14px 22px;border-radius:9px;font-weight:bold;cursor:pointer}
-section{padding:30px 7%}
-h2{font-size:23px}
-.platforms{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-.platform{background:#101a14;border:1px solid #20372a;padding:20px 8px;text-align:center;border-radius:12px;cursor:pointer}
-.platform.active{border-color:#27e98a;background:#14251b}
-.panel{background:#101813;border:1px solid #20372a;padding:22px;border-radius:15px;max-width:550px}
-label{display:block;margin:17px 0 8px;color:#a9b9ad;font-size:13px}
-input,select{width:100%;padding:14px;background:#080e0a;border:1px solid #294033;border-radius:8px;color:white}
-.price{font-size:24px;color:#27e98a;font-weight:bold;margin:20px 0}
-button{font-size:14px}
-.panel .btn{width:100%}
-footer{text-align:center;padding:35px;color:#66756b;font-size:12px}
-@media(max-width:550px){h1{font-size:34px}.platforms{grid-template-columns:repeat(2,1fr)}nav a{margin-left:7px}}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--bg);color:var(--text);
+  font-family:Inter,Arial,sans-serif;
+}
+button,input{font:inherit}
+button{cursor:pointer}
+a{color:inherit;text-decoration:none}
+header{
+  min-height:76px;padding:15px 7%;
+  display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid var(--border);
+  background:rgba(8,15,32,.95);
+  position:sticky;top:0;z-index:10;
+  backdrop-filter:blur(15px);
+}
+.logo{font-size:21px;font-weight:950;letter-spacing:-1px}
+.logo span{color:var(--cyan)}
+nav{display:flex;align-items:center;gap:22px}
+nav a{font-size:13px;color:var(--muted)}
+nav a:hover{color:white}
+.nav-actions{display:flex;gap:10px;align-items:center}
+.btn{
+  border:0;border-radius:10px;padding:13px 19px;
+  background:linear-gradient(110deg,var(--blue),#1762dc);
+  color:white;font-weight:750;font-size:13px;
+  box-shadow:0 8px 25px #1762dc30;
+}
+.btn:hover{filter:brightness(1.12)}
+.btn-outline{
+  background:transparent;border:1px solid var(--border);
+  box-shadow:none;color:white;
+}
+.hero{
+  padding:95px 7% 75px;
+  background:
+    radial-gradient(ellipse at 80% 20%,#1762dc30,transparent 45%),
+    radial-gradient(ellipse at 15% 90%,#13b9df12,transparent 40%);
+}
+.hero-content{max-width:760px}
+.tag{
+  color:var(--cyan);font-size:11px;font-weight:800;
+  letter-spacing:3px;text-transform:uppercase;
+}
+h1{
+  font-size:clamp(38px,7vw,65px);
+  line-height:1.08;letter-spacing:-2px;margin:20px 0;
+}
+h1 span{
+  background:linear-gradient(90deg,#3b91ff,#42d8ff);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.hero p{
+  color:var(--muted);font-size:16px;line-height:1.8;
+  max-width:570px;
+}
+.hero-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:28px}
+section{padding:65px 7%}
+.section-heading{margin-bottom:28px}
+.section-heading h2{font-size:28px;margin:0 0 10px}
+.section-heading p{color:var(--muted);margin:0;font-size:14px}
+.platforms{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:15px;
+}
+.platform{
+  display:flex;align-items:center;gap:14px;
+  padding:19px;background:var(--surface);
+  border:1px solid var(--border);border-radius:15px;
+  transition:.2s;
+}
+.platform:hover{
+  border-color:var(--blue);transform:translateY(-3px);
+  background:var(--surface2);
+}
+.platform img{width:32px;height:32px;object-fit:contain}
+.platform strong{font-size:14px}
+.platform small{display:block;color:var(--muted);font-size:11px;margin-top:5px}
+.features{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:15px;
+}
+.feature{
+  background:var(--surface);border:1px solid var(--border);
+  padding:23px;border-radius:15px;
+}
+.feature-icon{
+  width:42px;height:42px;border-radius:12px;
+  display:grid;place-items:center;
+  color:var(--cyan);background:#287bff20;font-size:20px;
+}
+.feature h3{font-size:16px;margin:17px 0 8px}
+.feature p{color:var(--muted);font-size:13px;line-height:1.7;margin:0}
+.cta{
+  margin:0 7% 70px;padding:35px;
+  border:1px solid #287bff55;border-radius:20px;
+  background:linear-gradient(120deg,#142b50,#101b31);
+  display:flex;justify-content:space-between;align-items:center;gap:20px;
+}
+.cta h2{margin:0 0 8px}
+.cta p{margin:0;color:var(--muted);font-size:13px}
+footer{
+  border-top:1px solid var(--border);padding:30px 7%;
+  color:#7788a5;font-size:12px;text-align:center;
+}
+
+/* AUTH SCREENS */
+.auth-screen{
+  display:none;min-height:calc(100vh - 76px);
+  padding:55px 18px;
+  align-items:center;justify-content:center;
+  background:
+    radial-gradient(ellipse at 50% 0%,#1762dc30,transparent 55%);
+}
+.auth-screen.active{display:flex}
+.auth-card{
+  width:100%;max-width:440px;padding:32px;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:19px;box-shadow:0 25px 80px #0005;
+}
+.auth-card h2{font-size:27px;margin:0 0 8px}
+.auth-subtitle{color:var(--muted);font-size:13px;margin:0 0 25px;line-height:1.6}
+.field{margin:17px 0}
+.field label{
+  display:block;font-size:12px;color:#bdc9dc;
+  margin-bottom:8px;font-weight:650;
+}
+.field input{
+  width:100%;padding:14px 15px;
+  border:1px solid var(--border);border-radius:9px;
+  background:#091326;color:white;outline:none;
+}
+.field input:focus{border-color:var(--blue)}
+.auth-card .btn{width:100%;margin-top:8px;padding:15px}
+.auth-switch{
+  color:var(--muted);font-size:13px;text-align:center;
+  margin:22px 0 0;
+}
+.auth-switch a{color:var(--cyan);font-weight:700}
+.message{
+  display:none;padding:12px;border-radius:9px;
+  font-size:12px;line-height:1.5;margin:15px 0;
+}
+.message.error{display:block;background:#ff647c18;color:#ff8294}
+.message.success{display:block;background:#39dba018;color:var(--success)}
+.back-home{
+  display:block;text-align:center;margin-top:20px;
+  font-size:12px;color:var(--muted);
+}
+.loading{opacity:.65;pointer-events:none}
+.hidden{display:none!important}
+
+@media(max-width:650px){
+  header{padding:14px 5%;min-height:68px}
+  nav{gap:12px}
+  nav a{font-size:11px}
+  .logo{font-size:18px}
+  .nav-actions .btn{padding:10px 12px;font-size:11px}
+  .hero{padding:70px 6% 55px}
+  section{padding:48px 6%}
+  .platforms{grid-template-columns:repeat(2,1fr);gap:10px}
+  .platform{padding:15px 11px;gap:10px}
+  .platform img{width:27px;height:27px}
+  .features{grid-template-columns:1fr}
+  .cta{margin:0 6% 50px;padding:25px;display:block}
+  .cta .btn{margin-top:20px}
+  .auth-card{padding:25px 20px}
+}
+@media(max-width:390px){
+  nav a{display:none}
+  .platform{padding:13px 9px}
+}
 </style>
 </head>
+
 <body>
+
 <header>
-<div class="logo">ZENITH BOOST.</div>
-<nav><a href="#services">Services</a><a href="#order">Order</a></nav>
+  <a class="logo" href="#" onclick="showHome()">ZENITH<span> BOOST.</span></a>
+
+  <nav>
+    <a href="#services" onclick="showHome()">Platforms</a>
+    <a href="#features" onclick="showHome()">Features</a>
+  </nav>
+
+  <div class="nav-actions">
+    <button class="btn btn-outline" id="loginNav" onclick="showAuth('login')">Login</button>
+    <button class="btn" id="signupNav" onclick="showAuth('signup')">Sign Up</button>
+    <button class="btn btn-outline hidden" id="logoutNav" onclick="logout()">Logout</button>
+  </div>
 </header>
 
-<div class="hero">
-<div class="tag">SOCIAL MEDIA GROWTH PLATFORM</div>
-<h1>Grow Your Socials.<br><span>Boost Your Presence.</span></h1>
-<p>Discover social media engagement services in one place. Simple ordering, transparent pricing and order tracking.</p>
-<a href="#order"><button class="btn">Get Started →</button></a>
-</div>
+<main id="homePage">
+  <div class="hero">
+    <div class="hero-content">
+      <div class="tag">Your digital growth partner</div>
+      <h1>Make Your Brand<br><span>Impossible to Ignore.</span></h1>
+      <p>
+        Discover smarter ways to promote your social media presence.
+        Manage your campaigns, reach your audience and follow your progress
+        from one platform.
+      </p>
+      <div class="hero-actions">
+        <button class="btn" onclick="showAuth('signup')">Create Your Account →</button>
+        <a href="#services"><button class="btn btn-outline">Explore Platforms</button></a>
+      </div>
+    </div>
+  </div>
 
-<section id="services">
-<h2>Choose a platform</h2>
-<div class="platforms">
-<div class="platform active" onclick="choose('Instagram',this)">📸<br>Instagram</div>
-<div class="platform" onclick="choose('TikTok',this)">🎵<br>TikTok</div>
-<div class="platform" onclick="choose('Facebook',this)">📘<br>Facebook</div>
-<div class="platform" onclick="choose('YouTube',this)">▶️<br>YouTube</div>
-<div class="platform" onclick="choose('Telegram',this)">✈️<br>Telegram</div>
-<div class="platform" onclick="choose('X',this)">𝕏<br>X</div>
-</div>
+  <section id="services">
+    <div class="section-heading">
+      <h2>Connect Your Platforms</h2>
+      <p>Explore the social platforms supported by ZENITH BOOST.</p>
+    </div>
+
+    <div class="platforms">
+      <div class="platform">
+        <img src="https://cdn.simpleicons.org/instagram/E4405F" alt="Instagram">
+        <div><strong>Instagram</strong><small>Visual social campaigns</small></div>
+      </div>
+      <div class="platform">
+        <img src="https://cdn.simpleicons.org/tiktok/FFFFFF" alt="TikTok">
+        <div><strong>TikTok</strong><small>Short-form video promotion</small></div>
+      </div>
+      <div class="platform">
+        <img src="https://cdn.simpleicons.org/facebook/0866FF" alt="Facebook">
+        <div><strong>Facebook</strong><small>Audience and brand awareness</small></div>
+      </div>
+      <div class="platform">
+        <img src="https://cdn.simpleicons.org/youtube/FF0033" alt="YouTube">
+        <div><strong>YouTube</strong><small>Video promotion campaigns</small></div>
+      </div>
+      <div class="platform">
+        <img src="https://cdn.simpleicons.org/telegram/26A5E4" alt="Telegram">
+        <div><strong>Telegram</strong><small>Community promotion</small></div>
+      </div>
+      <div class="platform">
+        <img src="https://cdn.simpleicons.org/x/FFFFFF" alt="X">
+        <div><strong>X</strong><small>Brand visibility campaigns</small></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="features">
+    <div class="section-heading">
+      <h2>Built for Smarter Growth</h2>
+      <p>Everything organised in one simple dashboard.</p>
+    </div>
+    <div class="features">
+      <div class="feature">
+        <div class="feature-icon">◈</div>
+        <h3>Campaign Management</h3>
+        <p>Organise your promotional campaigns and keep track of their progress.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">↗</div>
+        <h3>Progress Tracking</h3>
+        <p>Follow campaign updates and keep your activity organised.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">⌘</div>
+        <h3>One Platform</h3>
+        <p>Manage your social promotion workflow from one central place.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="cta">
+    <div>
+      <h2>Ready to get started?</h2>
+      <p>Create your ZENITH BOOST account and get started.</p>
+    </div>
+    <button class="btn" onclick="showAuth('signup')">Join ZENITH BOOST →</button>
+  </div>
+</main>
+
+<!-- SIGN UP -->
+<section class="auth-screen" id="signupPage">
+  <div class="auth-card">
+    <h2>Create Account</h2>
+    <p class="auth-subtitle">Join ZENITH BOOST and manage your social growth campaigns.</p>
+
+    <form id="signupForm">
+      <div class="field">
+        <label for="signupUsername">Username</label>
+        <input id="signupUsername" name="username" required minlength="3" autocomplete="username" placeholder="Choose a username">
+      </div>
+      <div class="field">
+        <label for="signupEmail">Email Address</label>
+        <input id="signupEmail" name="email" type="email" required autocomplete="email" placeholder="you@example.com">
+      </div>
+      <div class="field">
+        <label for="signupPassword">Password</label>
+        <input id="signupPassword" name="password" type="password" required minlength="8" autocomplete="new-password" placeholder="At least 8 characters">
+      </div>
+      <div class="field">
+        <label for="confirmPassword">Confirm Password</label>
+        <input id="confirmPassword" type="password" required minlength="8" autocomplete="new-password" placeholder="Enter password again">
+      </div>
+      <div id="signupMessage" class="message"></div>
+      <button class="btn" type="submit" id="signupSubmit">Create Account</button>
+    </form>
+
+    <p class="auth-switch">Already have an account? <a href="#" onclick="showAuth('login')">Login</a></p>
+    <a class="back-home" href="#" onclick="showHome()">← Back to homepage</a>
+  </div>
 </section>
 
-<section id="order">
-<h2>Place an order</h2>
-<div class="panel">
-<label>Platform</label>
-<input id="platform" value="Instagram" readonly>
-<label>Service</label>
-<select id="service" onchange="calculate()">
-<option>Likes</option>
-<option>Followers</option>
-<option>Comments</option>
-</select>
-<label>Public profile or post URL</label>
-<input id="link" placeholder="https://...">
-<label>Quantity</label>
-<input id="quantity" type="number" min="1" value="100" oninput="calculate()">
-<div class="price" id="price">₦0.00</div>
-<button class="btn" onclick="order()">Continue</button>
-<p id="notice">Pricing and fulfillment will be configured before accepting orders.</p>
-</div>
+<!-- LOGIN -->
+<section class="auth-screen" id="loginPage">
+  <div class="auth-card">
+    <h2>Welcome Back</h2>
+    <p class="auth-subtitle">Login to continue to your ZENITH BOOST account.</p>
+
+    <form id="loginForm">
+      <div class="field">
+        <label for="loginEmail">Email Address</label>
+        <input id="loginEmail" name="email" type="email" required autocomplete="email" placeholder="you@example.com">
+      </div>
+      <div class="field">
+        <label for="loginPassword">Password</label>
+        <input id="loginPassword" name="password" type="password" required autocomplete="current-password" placeholder="Enter your password">
+      </div>
+      <div id="loginMessage" class="message"></div>
+      <button class="btn" type="submit" id="loginSubmit">Login</button>
+    </form>
+
+    <p class="auth-switch">Don't have an account? <a href="#" onclick="showAuth('signup')">Create one</a></p>
+    <a class="back-home" href="#" onclick="showHome()">← Back to homepage</a>
+  </div>
 </section>
 
-<footer>© 2026 ZENITH BOOST. All rights reserved.</footer>
+<footer>
+  © 2026 ZENITH BOOST. All rights reserved.
+</footer>
 
 <script>
-function choose(name,el){
-document.querySelectorAll('.platform').forEach(x=>x.classList.remove('active'));
-el.classList.add('active');
-document.getElementById('platform').value=name;
+/* BACKEND API */
+const API_BASE = "https://zenith-boost-api.onrender.com";
+
+function showHome(){
+  document.getElementById("homePage").classList.remove("hidden");
+  document.getElementById("signupPage").classList.remove("active");
+  document.getElementById("loginPage").classList.remove("active");
+  window.scrollTo(0,0);
 }
-function calculate(){
-let q=Math.max(0,Number(document.getElementById('quantity').value)||0);
-document.getElementById('price').textContent='₦'+(q/1000*100).toFixed(2);
+
+function showAuth(type){
+  document.getElementById("homePage").classList.add("hidden");
+  document.getElementById("signupPage").classList.toggle("active",type==="signup");
+  document.getElementById("loginPage").classList.toggle("active",type==="login");
+  window.scrollTo(0,0);
 }
-function order(){
-alert('Ordering is not enabled yet. Payment and fulfillment must be configured first.');
+
+function showMessage(id,text,type){
+  const box=document.getElementById(id);
+  box.textContent=text;
+  box.className="message "+type;
 }
-calculate();
+
+async function apiRequest(path,data){
+  let response;
+  try{
+    response=await fetch(API_BASE+path,{
+      method:"POST",
+      credentials:"include",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify(data)
+    });
+  }catch(error){
+    throw new Error("Could not connect to the server. Check your internet or API CORS settings.");
+  }
+
+  let result={};
+  try{result=await response.json()}catch(e){}
+
+  if(!response.ok){
+    throw new Error(result.error||result.message||"Request failed. Please try again.");
+  }
+  return result;
+}
+
+/* SIGN UP */
+document.getElementById("signupForm").addEventListener("submit",async function(e){
+  e.preventDefault();
+
+  const username=document.getElementById("signupUsername").value.trim();
+  const email=document.getElementById("signupEmail").value.trim();
+  const password=document.getElementById("signupPassword").value;
+  const confirm=document.getElementById("confirmPassword").value;
+  const button=document.getElementById("signupSubmit");
+
+  if(password!==confirm){
+    showMessage("signupMessage","Your passwords do not match.","error");
+    return;
+  }
+
+  if(password.length<8){
+    showMessage("signupMessage","Password must contain at least 8 characters.","error");
+    return;
+  }
+
+  button.disabled=true;
+  button.textContent="Creating account...";
+
+  try{
+    await apiRequest("/api/register",{username,email,password});
+    showMessage("signupMessage","Account created successfully. You can now log in.","success");
+    document.getElementById("signupForm").reset();
+    setTimeout(()=>showAuth("login"),1200);
+  }catch(error){
+    showMessage("signupMessage",error.message,"error");
+  }finally{
+    button.disabled=false;
+    button.textContent="Create Account";
+  }
+});
+
+/* LOGIN */
+document.getElementById("loginForm").addEventListener("submit",async function(e){
+  e.preventDefault();
+
+  const email=document.getElementById("loginEmail").value.trim();
+  const password=document.getElementById("loginPassword").value;
+  const button=document.getElementById("loginSubmit");
+
+  button.disabled=true;
+  button.textContent="Logging in...";
+
+  try{
+    await apiRequest("/api/login",{email,password});
+    showMessage("loginMessage","Login successful.","success");
+    document.getElementById("loginForm").reset();
+    setTimeout(()=>{
+      showHome();
+      alert("Welcome to ZENITH BOOST!");
+    },700);
+  }catch(error){
+    showMessage("loginMessage",error.message,"error");
+  }finally{
+    button.disabled=false;
+    button.textContent="Login";
+  }
+});
+
+/* LOGOUT */
+async function logout(){
+  try{
+    await fetch(API_BASE+"/api/logout",{
+      method:"POST",
+      credentials:"include"
+    });
+  }catch(e){}
+  alert("You have been logged out.");
+  showHome();
+}
+
+/* CHECK EXISTING SESSION */
+async function checkSession(){
+  try{
+    const response=await fetch(API_BASE+"/api/me",{credentials:"include"});
+    if(response.ok){
+      document.getElementById("loginNav").classList.add("hidden");
+      document.getElementById("signupNav").classList.add("hidden");
+      document.getElementById("logoutNav").classList.remove("hidden");
+    }
+  }catch(e){}
+}
+checkSession();
 </script>
+
 </body>
 </html>
