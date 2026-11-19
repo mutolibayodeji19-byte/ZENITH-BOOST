@@ -5,231 +5,202 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#080f20">
-<title>ZENITH BOOST</title>
+<title>ZENITH BOOST — Customer Dashboard</title>
 
 <style>
 :root{
-  --bg:#080f20;
-  --card:#101b31;
-  --card2:#14223b;
-  --blue:#287bff;
-  --cyan:#36c9ff;
-  --white:#f4f7ff;
-  --muted:#91a0ba;
-  --border:#243550;
-  --green:#39dba0;
+--bg:#080f20;
+--surface:#101b31;
+--surface2:#14223b;
+--blue:#287bff;
+--cyan:#36c9ff;
+--text:#f4f7ff;
+--muted:#91a0ba;
+--border:#243550;
+--green:#39dba0;
+--red:#ff647c;
 }
 *{box-sizing:border-box}
 body{
-  margin:0;background:var(--bg);color:var(--white);
-  font-family:Arial,sans-serif;
+margin:0;background:var(--bg);color:var(--text);
+font-family:Arial, sans-serif;
 }
-button,input{font:inherit}
+button,input,select{font:inherit}
 button{cursor:pointer}
-a{text-decoration:none;color:inherit}
 .hidden{display:none!important}
-
 header{
-  padding:16px 6%;min-height:72px;
-  display:flex;align-items:center;justify-content:space-between;
-  border-bottom:1px solid var(--border);
-  background:#080f20;
-  position:sticky;top:0;z-index:10;
+height:72px;padding:0 5%;
+display:flex;align-items:center;justify-content:space-between;
+background:#0a1428;border-bottom:1px solid var(--border);
+position:sticky;top:0;z-index:20;
 }
-.logo{font-size:21px;font-weight:900;letter-spacing:-1px}
+.logo{font-size:21px;font-weight:900;text-decoration:none;color:white}
 .logo span{color:var(--cyan)}
-nav{display:flex;gap:20px}
-nav a{font-size:13px;color:var(--muted)}
-.nav-actions{display:flex;gap:9px}
 .btn{
-  padding:13px 19px;border:0;border-radius:9px;
-  color:white;font-size:13px;font-weight:bold;
-  background:linear-gradient(110deg,#287bff,#1762dc);
+border:0;border-radius:9px;padding:12px 17px;
+background:linear-gradient(110deg,var(--blue),#1762dc);
+color:white;font-weight:700;
 }
-.btn:hover{filter:brightness(1.12)}
 .btn-outline{
-  background:transparent;border:1px solid var(--border);
+background:transparent;border:1px solid var(--border);
+color:white;
 }
-.btn-small{padding:10px 14px}
-.hero{
-  padding:85px 7%;
-  background:
-  radial-gradient(ellipse at 80% 15%,#1762dc35,transparent 45%),
-  radial-gradient(ellipse at 10% 90%,#36c9ff12,transparent 40%);
+.btn:disabled{opacity:.5;cursor:not-allowed}
+nav{display:flex;gap:12px;align-items:center}
+nav button{
+background:transparent;border:0;color:var(--muted);
+padding:10px;font-size:13px;
 }
-.hero-inner{max-width:760px}
-.tag{
-  color:var(--cyan);font-size:11px;
-  font-weight:bold;letter-spacing:3px;
+nav button:hover{color:white}
+.page{display:none}
+.page.active{display:block}
+.home{
+padding:85px 7%;
+background:radial-gradient(ellipse at 80% 20%,#1762dc30,transparent 50%);
 }
-h1{
-  font-size:clamp(38px,7vw,64px);
-  line-height:1.1;letter-spacing:-2px;
-  margin:20px 0;
-}
-h1 span{
-  background:linear-gradient(90deg,#3b91ff,#42d8ff);
-  -webkit-background-clip:text;
-  background-clip:text;color:transparent;
-}
-p{color:var(--muted);line-height:1.7}
-.hero p{max-width:570px;font-size:15px}
-.hero-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:28px}
-section{padding:55px 7%}
+.home h1{font-size:clamp(38px,7vw,65px);line-height:1.1;margin:20px 0}
+.home h1 span{color:var(--cyan)}
+.home p{color:var(--muted);line-height:1.8;max-width:570px}
+section{padding:45px 7%}
 .heading{margin-bottom:25px}
-.heading h2{font-size:25px;margin:0 0 8px}
-.heading p{font-size:13px;margin:0}
-.platforms{
-  display:grid;grid-template-columns:repeat(3,1fr);gap:14px;
+.heading h2{margin:0 0 8px}
+.heading p{color:var(--muted);font-size:13px}
+.platforms,.cards{
+display:grid;grid-template-columns:repeat(3,1fr);gap:14px;
 }
-.platform{
-  display:flex;align-items:center;gap:13px;
-  padding:18px;background:var(--card);
-  border:1px solid var(--border);border-radius:14px;
+.card,.platform{
+background:var(--surface);border:1px solid var(--border);
+border-radius:14px;padding:20px;
 }
-.platform img{width:31px;height:31px;object-fit:contain}
-.platform strong{font-size:14px}
-.platform small{
-  display:block;color:var(--muted);
-  font-size:11px;margin-top:5px;
+.platform{display:flex;align-items:center;gap:13px}
+.platform img{width:30px;height:30px;object-fit:contain}
+.platform small{display:block;color:var(--muted);margin-top:5px}
+.auth-wrap{
+min-height:calc(100vh - 72px);display:none;
+align-items:center;justify-content:center;padding:25px;
 }
-.features{
-  display:grid;grid-template-columns:repeat(3,1fr);gap:14px;
-}
-.feature{
-  padding:22px;background:var(--card);
-  border:1px solid var(--border);border-radius:14px;
-}
-.feature-icon{
-  width:42px;height:42px;display:grid;
-  place-items:center;border-radius:12px;
-  color:var(--cyan);background:#287bff20;
-}
-.feature h3{font-size:15px}
-.feature p{font-size:12px}
-.cta{
-  margin:0 7% 60px;padding:30px;
-  background:linear-gradient(120deg,#142b50,#101b31);
-  border:1px solid #287bff55;border-radius:17px;
-}
-footer{
-  text-align:center;padding:30px;
-  border-top:1px solid var(--border);
-  color:#7788a5;font-size:12px;
-}
-
-/* AUTH */
-.auth-screen{
-  display:none;min-height:80vh;
-  padding:45px 16px;
-  justify-content:center;align-items:center;
-  background:radial-gradient(ellipse at 50% 0%,#1762dc30,transparent 60%);
-}
-.auth-screen.active{display:flex}
+.auth-wrap.active{display:flex}
 .auth-card{
-  width:100%;max-width:440px;padding:30px;
-  background:var(--card);border:1px solid var(--border);
-  border-radius:18px;
+width:100%;max-width:430px;padding:30px;
+background:var(--surface);border:1px solid var(--border);
+border-radius:17px;
 }
-.auth-card h2{margin:0 0 8px;font-size:27px}
-.auth-card .subtitle{font-size:13px;margin-bottom:25px}
-.field{margin:16px 0}
+.auth-card h2{margin-top:0}
+.field{margin:17px 0}
 .field label{
-  display:block;font-size:12px;
-  margin-bottom:8px;color:#bdc9dc;
+display:block;font-size:12px;color:#bdc9dc;
+margin-bottom:8px;font-weight:bold;
 }
-.field input{
-  width:100%;padding:14px;
-  color:white;background:#091326;
-  border:1px solid var(--border);border-radius:9px;
-  outline:none;
+.field input,.field select{
+width:100%;padding:14px;
+background:#091326;color:white;
+border:1px solid var(--border);border-radius:9px;
+outline:none;
 }
-.field input:focus{border-color:var(--blue)}
-.auth-card .btn{width:100%;padding:15px;margin-top:8px}
-.auth-switch{text-align:center;font-size:13px;margin-top:20px}
-.auth-switch a{color:var(--cyan);font-weight:bold}
-.back-home{
-  display:block;text-align:center;
-  margin-top:20px;color:var(--muted);font-size:12px;
-}
+.field input:focus,.field select:focus{border-color:var(--blue)}
+.auth-card .btn{width:100%;margin-top:10px}
 .message{
-  display:none;padding:12px;border-radius:9px;
-  font-size:12px;line-height:1.5;margin:14px 0;
+display:none;padding:12px;border-radius:9px;
+font-size:13px;margin:15px 0;line-height:1.5;
 }
 .message.error{display:block;background:#ff647c18;color:#ff8294}
 .message.success{display:block;background:#39dba018;color:var(--green)}
-
-/* DASHBOARD */
+.auth-switch{text-align:center;color:var(--muted);font-size:13px}
+.auth-switch a{color:var(--cyan)}
 .dashboard{
-  display:none;padding:38px 7% 65px;
-  min-height:75vh;
+display:grid;grid-template-columns:230px 1fr;
+min-height:calc(100vh - 72px);
 }
-.dashboard.active{display:block}
-.welcome{
-  padding:25px;background:linear-gradient(120deg,#142b50,#101b31);
-  border:1px solid #287bff55;border-radius:16px;
-  margin-bottom:25px;
+.sidebar{
+background:#0b162b;border-right:1px solid var(--border);
+padding:24px 15px;
 }
-.welcome h2{margin:0 0 7px;font-size:25px}
-.welcome p{margin:0;font-size:13px}
+.sidebar h3{
+font-size:11px;color:var(--muted);
+letter-spacing:2px;padding:0 12px;
+}
+.side-link{
+display:block;width:100%;text-align:left;
+padding:14px 13px;margin:5px 0;
+border:0;border-radius:9px;
+background:transparent;color:var(--muted);
+font-size:13px;
+}
+.side-link.active,.side-link:hover{
+background:#287bff20;color:white;
+}
+.main-content{padding:32px;min-width:0}
+.welcome{margin-bottom:25px}
+.welcome h1{font-size:26px;margin:0 0 8px}
+.welcome p{color:var(--muted);font-size:13px}
 .stats{
-  display:grid;grid-template-columns:repeat(3,1fr);
-  gap:13px;margin-bottom:25px;
+display:grid;grid-template-columns:repeat(3,1fr);gap:14px;
+margin-bottom:25px;
 }
 .stat{
-  background:var(--card);border:1px solid var(--border);
-  padding:20px;border-radius:13px;
+background:var(--surface);border:1px solid var(--border);
+padding:20px;border-radius:13px;
 }
-.stat small{color:var(--muted);font-size:11px}
-.stat strong{display:block;font-size:23px;margin-top:9px}
-.dash-grid{
-  display:grid;grid-template-columns:1fr 1fr;gap:15px;
+.stat small{color:var(--muted)}
+.stat h2{font-size:27px;margin:12px 0 0}
+.panel{
+background:var(--surface);border:1px solid var(--border);
+padding:22px;border-radius:14px;margin-bottom:20px;
 }
-.dash-card{
-  background:var(--card);border:1px solid var(--border);
-  padding:22px;border-radius:14px;
+.panel h3{margin-top:0}
+.form-grid{
+display:grid;grid-template-columns:1fr 1fr;gap:0 16px;
 }
-.dash-card h3{margin:0 0 12px;font-size:16px}
-.dash-card p{font-size:12px}
-.account-line{
-  padding:12px 0;border-bottom:1px solid var(--border);
-  font-size:13px;overflow-wrap:anywhere;
+.full{grid-column:1/-1}
+.hint{color:var(--muted);font-size:12px;line-height:1.6}
+.service-item{
+padding:17px;background:var(--surface2);
+border:1px solid var(--border);border-radius:11px;
 }
-.account-line span{color:var(--muted);display:block;font-size:11px;margin-bottom:5px}
-.orders{margin-top:25px}
-.order-item{
-  background:var(--card);border:1px solid var(--border);
-  border-radius:12px;padding:16px;margin:12px 0;
-  font-size:12px;overflow-wrap:anywhere;
+.service-item h3{margin:0 0 8px;font-size:15px}
+.service-item p{margin:0;color:var(--muted);font-size:12px}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th,td{
+padding:14px 10px;text-align:left;
+border-bottom:1px solid var(--border);
+white-space:nowrap;
 }
-.order-item strong{color:var(--cyan)}
-.status{color:var(--green);font-weight:bold}
+th{color:var(--muted)}
+.status{
+display:inline-block;padding:6px 9px;
+border-radius:20px;background:#287bff20;color:#8bb8ff;
+font-size:11px;
+}
 .empty{
-  color:var(--muted);font-size:13px;
-  padding:20px 0;
+padding:30px;text-align:center;color:var(--muted);
+background:var(--surface2);border-radius:10px;
 }
-.loading{opacity:.65;pointer-events:none}
-
-@media(max-width:650px){
-  header{padding:14px 5%}
-  .logo{font-size:17px}
-  nav{gap:10px}
-  nav a{font-size:11px}
-  .nav-actions .btn{padding:10px 11px;font-size:11px}
-  .hero{padding:65px 6%}
-  section{padding:45px 6%}
-  .platforms{grid-template-columns:repeat(2,1fr);gap:10px}
-  .platform{padding:14px 10px;gap:9px}
-  .platform img{width:26px;height:26px}
-  .features{grid-template-columns:1fr}
-  .cta{margin:0 6% 45px}
-  .auth-card{padding:24px 19px}
-  .dashboard{padding:30px 5%}
-  .stats{grid-template-columns:1fr}
-  .dash-grid{grid-template-columns:1fr}
+footer{
+text-align:center;padding:28px;color:var(--muted);
+border-top:1px solid var(--border);font-size:12px;
+}
+@media(max-width:750px){
+header{padding:0 4%}
+nav{gap:3px}
+nav button{font-size:11px;padding:7px}
+.dashboard{grid-template-columns:1fr}
+.sidebar{
+border-right:0;border-bottom:1px solid var(--border);
+padding:10px;display:flex;gap:5px;overflow-x:auto;
+}
+.sidebar h3{display:none}
+.side-link{white-space:nowrap;width:auto;padding:12px}
+.main-content{padding:22px 15px}
+.platforms,.cards{grid-template-columns:repeat(2,1fr)}
+.stats{grid-template-columns:1fr 1fr}
+.form-grid{grid-template-columns:1fr}
+.full{grid-column:auto}
 }
 @media(max-width:390px){
-  nav{display:none}
+.logo{font-size:17px}
+nav button{font-size:10px}
+.platforms,.cards{grid-template-columns:1fr}
 }
 </style>
 </head>
@@ -237,485 +208,466 @@ footer{
 <body>
 
 <header>
-  <a class="logo" href="#" onclick="showHome()">ZENITH<span> BOOST.</span></a>
-
-  <nav id="publicNav">
-    <a href="#services" onclick="showHome()">Platforms</a>
-    <a href="#features" onclick="showHome()">Features</a>
-  </nav>
-
-  <div class="nav-actions">
-    <button class="btn btn-outline btn-small" id="loginNav" onclick="showAuth('login')">Login</button>
-    <button class="btn btn-small" id="signupNav" onclick="showAuth('signup')">Sign Up</button>
-    <button class="btn btn-small hidden" id="dashboardNav" onclick="showDashboard()">Dashboard</button>
-    <button class="btn btn-outline btn-small hidden" id="logoutNav" onclick="logout()">Logout</button>
-  </div>
+<a href="#" class="logo" onclick="showHome()">ZENITH<span> BOOST.</span></a>
+<nav id="publicNav">
+<button onclick="showHome()">Home</button>
+<button onclick="showAuth('login')">Login</button>
+<button class="btn" onclick="showAuth('signup')">Sign Up</button>
+</nav>
+<nav id="userNav" class="hidden">
+<span id="navUsername" class="hint"></span>
+<button class="btn btn-outline" onclick="logout()">Logout</button>
+</nav>
 </header>
 
-<main id="homePage">
-  <div class="hero">
-    <div class="hero-inner">
-      <div class="tag">YOUR DIGITAL GROWTH PARTNER</div>
-      <h1>Make Your Brand<br><span>Impossible to Ignore.</span></h1>
-      <p>
-        Discover smarter ways to promote your social media presence.
-        Manage your campaigns, reach your audience and follow your progress
-        from one platform.
-      </p>
-      <div class="hero-actions">
-        <button class="btn" onclick="showAuth('signup')">Create Your Account →</button>
-        <a href="#services"><button class="btn btn-outline">Explore Platforms</button></a>
-      </div>
-    </div>
-  </div>
+<main id="homePage" class="page active">
+<div class="home">
+<div class="hint">YOUR DIGITAL GROWTH PARTNER</div>
+<h1>Make Your Brand<br><span>Impossible to Ignore.</span></h1>
+<p>Manage your social promotion orders, explore services and follow your progress from one platform.</p>
+<button class="btn" onclick="showAuth('signup')">Create Your Account →</button>
+<button class="btn btn-outline" onclick="showAuth('login')">Login</button>
+</div>
 
-  <section id="services">
-    <div class="heading">
-      <h2>Connect Your Platforms</h2>
-      <p>Explore the social platforms supported by ZENITH BOOST.</p>
-    </div>
-
-    <div class="platforms">
-      <div class="platform">
-        <img src="https://cdn.simpleicons.org/instagram/E4405F" alt="Instagram">
-        <div><strong>Instagram</strong><small>Visual campaigns</small></div>
-      </div>
-      <div class="platform">
-        <img src="https://cdn.simpleicons.org/tiktok/FFFFFF" alt="TikTok">
-        <div><strong>TikTok</strong><small>Video promotion</small></div>
-      </div>
-      <div class="platform">
-        <img src="https://cdn.simpleicons.org/facebook/0866FF" alt="Facebook">
-        <div><strong>Facebook</strong><small>Brand awareness</small></div>
-      </div>
-      <div class="platform">
-        <img src="https://cdn.simpleicons.org/youtube/FF0033" alt="YouTube">
-        <div><strong>YouTube</strong><small>Video campaigns</small></div>
-      </div>
-      <div class="platform">
-        <img src="https://cdn.simpleicons.org/telegram/26A5E4" alt="Telegram">
-        <div><strong>Telegram</strong><small>Community promotion</small></div>
-      </div>
-      <div class="platform">
-        <img src="https://cdn.simpleicons.org/x/FFFFFF" alt="X">
-        <div><strong>X</strong><small>Brand visibility</small></div>
-      </div>
-    </div>
-  </section>
-
-  <section id="features">
-    <div class="heading">
-      <h2>Built for Smarter Growth</h2>
-      <p>Everything organised in one simple dashboard.</p>
-    </div>
-    <div class="features">
-      <div class="feature">
-        <div class="feature-icon">◈</div>
-        <h3>Campaign Management</h3>
-        <p>Organise promotional campaigns and track their progress.</p>
-      </div>
-      <div class="feature">
-        <div class="feature-icon">↗</div>
-        <h3>Progress Tracking</h3>
-        <p>Follow campaign updates and activity.</p>
-      </div>
-      <div class="feature">
-        <div class="feature-icon">⌘</div>
-        <h3>One Platform</h3>
-        <p>Manage your promotion workflow from one place.</p>
-      </div>
-    </div>
-  </section>
-
-  <div class="cta">
-    <h2>Ready to get started?</h2>
-    <p>Create your ZENITH BOOST account today.</p>
-    <button class="btn" onclick="showAuth('signup')">Join ZENITH BOOST →</button>
-  </div>
+<section>
+<div class="heading">
+<h2>Supported Platforms</h2>
+<p>Explore the platforms available through ZENITH BOOST.</p>
+</div>
+<div class="platforms">
+<div class="platform"><img src="https://cdn.simpleicons.org/instagram/E4405F"><div><b>Instagram</b><small>Social promotion</small></div></div>
+<div class="platform"><img src="https://cdn.simpleicons.org/tiktok/FFFFFF"><div><b>TikTok</b><small>Video promotion</small></div></div>
+<div class="platform"><img src="https://cdn.simpleicons.org/facebook/0866FF"><div><b>Facebook</b><small>Audience promotion</small></div></div>
+<div class="platform"><img src="https://cdn.simpleicons.org/youtube/FF0033"><div><b>YouTube</b><small>Video promotion</small></div></div>
+<div class="platform"><img src="https://cdn.simpleicons.org/telegram/26A5E4"><div><b>Telegram</b><small>Community promotion</small></div></div>
+<div class="platform"><img src="https://cdn.simpleicons.org/x/FFFFFF"><div><b>X</b><small>Social promotion</small></div></div>
+</div>
+</section>
 </main>
 
-<!-- SIGNUP -->
-<section class="auth-screen" id="signupPage">
-  <div class="auth-card">
-    <h2>Create Account</h2>
-    <p class="subtitle">Join ZENITH BOOST and manage your campaigns.</p>
-
-    <form id="signupForm">
-      <div class="field">
-        <label>Username</label>
-        <input id="signupUsername" required minlength="3" maxlength="40" autocomplete="username" placeholder="Choose a username">
-      </div>
-      <div class="field">
-        <label>Email Address</label>
-        <input id="signupEmail" type="email" required maxlength="120" autocomplete="email" placeholder="you@example.com">
-      </div>
-      <div class="field">
-        <label>Password</label>
-        <input id="signupPassword" type="password" required minlength="10" autocomplete="new-password" placeholder="At least 10 characters">
-      </div>
-      <div class="field">
-        <label>Confirm Password</label>
-        <input id="confirmPassword" type="password" required minlength="10" autocomplete="new-password" placeholder="Enter password again">
-      </div>
-      <div id="signupMessage" class="message"></div>
-      <button class="btn" type="submit" id="signupSubmit">Create Account</button>
-    </form>
-
-    <p class="auth-switch">Already have an account? <a href="#" onclick="showAuth('login')">Login</a></p>
-    <a class="back-home" href="#" onclick="showHome()">← Back to homepage</a>
-  </div>
+<section id="loginPage" class="auth-wrap">
+<div class="auth-card">
+<h2>Welcome Back</h2>
+<p class="hint">Login to your ZENITH BOOST account.</p>
+<form id="loginForm">
+<div class="field"><label>Email</label><input id="loginEmail" type="email" required autocomplete="email"></div>
+<div class="field"><label>Password</label><input id="loginPassword" type="password" required autocomplete="current-password"></div>
+<div id="loginMessage" class="message"></div>
+<button class="btn" id="loginSubmit">Login</button>
+</form>
+<p class="auth-switch">No account? <a href="#" onclick="showAuth('signup')">Create one</a></p>
+</div>
 </section>
 
-<!-- LOGIN -->
-<section class="auth-screen" id="loginPage">
-  <div class="auth-card">
-    <h2>Welcome Back</h2>
-    <p class="subtitle">Login to continue to your ZENITH BOOST account.</p>
-
-    <form id="loginForm">
-      <div class="field">
-        <label>Email Address</label>
-        <input id="loginEmail" type="email" required autocomplete="email" placeholder="you@example.com">
-      </div>
-      <div class="field">
-        <label>Password</label>
-        <input id="loginPassword" type="password" required autocomplete="current-password" placeholder="Your password">
-      </div>
-      <div id="loginMessage" class="message"></div>
-      <button class="btn" type="submit" id="loginSubmit">Login</button>
-    </form>
-
-    <p class="auth-switch">Don't have an account? <a href="#" onclick="showAuth('signup')">Create one</a></p>
-    <a class="back-home" href="#" onclick="showHome()">← Back to homepage</a>
-  </div>
+<section id="signupPage" class="auth-wrap">
+<div class="auth-card">
+<h2>Create Account</h2>
+<p class="hint">Join ZENITH BOOST.</p>
+<form id="signupForm">
+<div class="field"><label>Username</label><input id="signupUsername" required minlength="3" maxlength="40"></div>
+<div class="field"><label>Email</label><input id="signupEmail" type="email" required></div>
+<div class="field"><label>Password</label><input id="signupPassword" type="password" required minlength="10"></div>
+<div class="field"><label>Confirm Password</label><input id="confirmPassword" type="password" required minlength="10"></div>
+<div id="signupMessage" class="message"></div>
+<button class="btn" id="signupSubmit">Create Account</button>
+</form>
+<p class="auth-switch">Already registered? <a href="#" onclick="showAuth('login')">Login</a></p>
+</div>
 </section>
 
-<!-- CUSTOMER DASHBOARD -->
-<section class="dashboard" id="dashboardPage">
-  <div class="welcome">
-    <div class="tag">CUSTOMER DASHBOARD</div>
-    <h2>Welcome, <span id="dashUsername">User</span> 👋</h2>
-    <p>Your ZENITH BOOST account overview.</p>
-  </div>
+<div id="dashboardPage" class="page">
+<div class="dashboard">
+<aside class="sidebar">
+<h3>MY WORKSPACE</h3>
+<button class="side-link active" data-view="overview" onclick="openView('overview',this)">▦ Overview</button>
+<button class="side-link" data-view="services" onclick="openView('services',this)">◈ Boosting Services</button>
+<button class="side-link" data-view="place" onclick="openView('place',this)">＋ Place Order</button>
+<button class="side-link" data-view="orders" onclick="openView('orders',this)">▤ My Orders</button>
+<button class="side-link" data-view="account" onclick="openView('account',this)">♙ My Account</button>
+</aside>
 
-  <div class="stats">
-    <div class="stat">
-      <small>ACCOUNT STATUS</small>
-      <strong style="color:var(--green)">Active</strong>
-    </div>
-    <div class="stat">
-      <small>TOTAL ORDERS</small>
-      <strong id="totalOrders">0</strong>
-    </div>
-    <div class="stat">
-      <small>ACCOUNT TYPE</small>
-      <strong>Customer</strong>
-    </div>
-  </div>
+<div class="main-content">
 
-  <div class="dash-grid">
-    <div class="dash-card">
-      <h3>Account Information</h3>
-      <div class="account-line">
-        <span>Username</span>
-        <strong id="accountUsername">Loading...</strong>
-      </div>
-      <div class="account-line">
-        <span>Email</span>
-        <strong id="accountEmail">Loading...</strong>
-      </div>
-      <div class="account-line">
-        <span>Member since</span>
-        <strong id="accountCreated">Loading...</strong>
-      </div>
-    </div>
+<div id="view-overview" class="view">
+<div class="welcome">
+<h1 id="welcomeTitle">Welcome back</h1>
+<p>Your ZENITH BOOST customer dashboard.</p>
+</div>
+<div class="stats">
+<div class="stat"><small>Total Orders</small><h2 id="totalOrders">0</h2></div>
+<div class="stat"><small>Pending Orders</small><h2 id="pendingOrders">0</h2></div>
+<div class="stat"><small>Completed Orders</small><h2 id="completedOrders">0</h2></div>
+</div>
+<div class="panel">
+<h3>Quick Actions</h3>
+<button class="btn" onclick="openView('place')">＋ Place an Order</button>
+<button class="btn btn-outline" onclick="openView('services')">Explore Services</button>
+</div>
+<div class="panel">
+<h3>Recent Orders</h3>
+<div id="recentOrders"><div class="empty">Loading your orders...</div></div>
+</div>
+</div>
 
-    <div class="dash-card">
-      <h3>Quick Actions</h3>
-      <p>Your account is connected. Your order history will appear below.</p>
-      <button class="btn" onclick="loadOrders()">Refresh Orders</button>
-    </div>
-  </div>
+<div id="view-services" class="view hidden">
+<div class="welcome">
+<h1>Boosting Services</h1>
+<p>Browse the service categories currently available in the system.</p>
+</div>
+<div id="servicesList" class="cards">
+<div class="empty">Loading services...</div>
+</div>
+<p class="hint">Service availability is based on the backend catalogue. Prices and delivery estimates are not displayed because they have not yet been configured.</p>
+</div>
 
-  <div class="orders">
-    <div class="heading">
-      <h2>My Orders</h2>
-      <p>Your recent order activity.</p>
-    </div>
-    <div id="ordersList" class="empty">Loading orders...</div>
-  </div>
-</section>
+<div id="view-place" class="view hidden">
+<div class="welcome">
+<h1>Place an Order</h1>
+<p>Submit a social promotion request.</p>
+</div>
+<div class="panel">
+<form id="orderForm">
+<div class="form-grid">
+<div class="field">
+<label>Platform</label>
+<select id="orderPlatform" required>
+<option value="">Loading platforms...</option>
+</select>
+</div>
+<div class="field">
+<label>Service</label>
+<select id="orderService" required>
+<option value="">Choose a platform first</option>
+</select>
+</div>
+<div class="field full">
+<label>Public Post / Profile URL</label>
+<input id="orderLink" type="url" placeholder="https://..." required>
+</div>
+<div class="field full">
+<label>Quantity</label>
+<input id="orderQuantity" type="number" min="1" max="100000" required placeholder="Enter quantity">
+</div>
+</div>
+<p class="hint">Use a valid HTTPS link belonging to the selected platform. Quantity must be between 1 and 100,000.</p>
+<div id="orderMessage" class="message"></div>
+<button class="btn" id="orderSubmit">Submit Order</button>
+</form>
+</div>
+<div class="panel">
+<h3>Before you submit</h3>
+<p class="hint">Submitting creates an order record with Pending status. Payment processing and automatic service fulfillment are not yet connected. Do not treat submission as confirmation of delivery.</p>
+</div>
+</div>
+
+<div id="view-orders" class="view hidden">
+<div class="welcome">
+<h1>My Orders</h1>
+<p>View your submitted requests and their current status.</p>
+</div>
+<div class="panel">
+<div id="ordersList"><div class="empty">Loading orders...</div></div>
+</div>
+</div>
+
+<div id="view-account" class="view hidden">
+<div class="welcome">
+<h1>My Account</h1>
+<p>Your account information.</p>
+</div>
+<div class="panel">
+<h3>Account Details</h3>
+<p><span class="hint">Username</span><br><b id="accountUsername">—</b></p>
+<p><span class="hint">Email</span><br><b id="accountEmail">—</b></p>
+<p><span class="hint">Member Since</span><br><b id="accountCreated">—</b></p>
+<button class="btn btn-outline" onclick="logout()">Logout</button>
+</div>
+</div>
+
+</div>
+</div>
+</div>
 
 <footer>© 2026 ZENITH BOOST. All rights reserved.</footer>
 
 <script>
-const API_BASE = "https://zenith-boost-api.onrender.com";
+const API_BASE="https://zenith-boost-api.onrender.com";
 
-let currentUser = null;
+let currentUser=null;
+let serviceCatalog={};
+let myOrders=[];
 
-const $ = id => document.getElementById(id);
-
-function hideAllPages(){
-  $("homePage").classList.add("hidden");
-  $("signupPage").classList.remove("active");
-  $("loginPage").classList.remove("active");
-  $("dashboardPage").classList.remove("active");
+async function api(path,options={}){
+const response=await fetch(API_BASE+path,{
+...options,
+credentials:"include",
+headers:{
+"Content-Type":"application/json",
+...(options.headers||{})
 }
-
-function updateNavigation(loggedIn){
-  $("loginNav").classList.toggle("hidden",loggedIn);
-  $("signupNav").classList.toggle("hidden",loggedIn);
-  $("dashboardNav").classList.toggle("hidden",!loggedIn);
-  $("logoutNav").classList.toggle("hidden",!loggedIn);
+});
+let data={};
+try{data=await response.json()}catch(e){}
+if(!response.ok){
+throw new Error(data.message||data.error||"Request failed.");
+}
+return data;
 }
 
 function showHome(){
-  hideAllPages();
-  $("homePage").classList.remove("hidden");
-  window.scrollTo(0,0);
+hideAll();
+document.getElementById("homePage").classList.add("active");
+window.scrollTo(0,0);
 }
 
 function showAuth(type){
-  hideAllPages();
-  $(type==="signup"?"signupPage":"loginPage").classList.add("active");
-  window.scrollTo(0,0);
+hideAll();
+document.getElementById(type+"Page").classList.add("active");
+window.scrollTo(0,0);
 }
 
-function showDashboard(){
-  if(!currentUser){
-    showAuth("login");
-    return;
-  }
-
-  hideAllPages();
-  $("dashboardPage").classList.add("active");
-  window.scrollTo(0,0);
-  renderUser();
-  loadOrders();
+function hideAll(){
+document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));
+document.querySelectorAll(".auth-wrap").forEach(x=>x.classList.remove("active"));
 }
 
 function showMessage(id,message,type){
-  const box=$(id);
-  box.textContent=message;
-  box.className="message "+type;
+const box=document.getElementById(id);
+box.textContent=message;
+box.className="message "+type;
 }
 
-async function apiRequest(path,method="GET",data=null){
-  const options={
-    method,
-    credentials:"include",
-    headers:{}
-  };
-
-  if(data!==null){
-    options.headers["Content-Type"]="application/json";
-    options.body=JSON.stringify(data);
-  }
-
-  let response;
-
-  try{
-    response=await fetch(API_BASE+path,options);
-  }catch(error){
-    throw new Error("Cannot connect to the server. Check your internet connection.");
-  }
-
-  let result={};
-  try{
-    result=await response.json();
-  }catch(error){}
-
-  if(!response.ok){
-    throw new Error(result.message||result.error||"Request failed.");
-  }
-
-  return result;
+function setLoggedIn(user){
+currentUser=user;
+document.getElementById("publicNav").classList.add("hidden");
+document.getElementById("userNav").classList.remove("hidden");
+document.getElementById("navUsername").textContent=user.username;
+document.getElementById("welcomeTitle").textContent="Welcome, "+user.username;
+document.getElementById("accountUsername").textContent=user.username;
+document.getElementById("accountEmail").textContent=user.email;
+document.getElementById("accountCreated").textContent=user.created_at?new Date(user.created_at).toLocaleDateString():"—";
+hideAll();
+document.getElementById("dashboardPage").classList.add("active");
+openView("overview");
+loadServices();
+loadOrders();
+window.scrollTo(0,0);
 }
 
-function renderUser(){
-  if(!currentUser)return;
-
-  $("dashUsername").textContent=currentUser.username;
-  $("accountUsername").textContent=currentUser.username;
-  $("accountEmail").textContent=currentUser.email;
-  $("accountCreated").textContent=currentUser.created_at
-    ?new Date(currentUser.created_at).toLocaleDateString()
-    :"Not available";
+function openView(name,button){
+document.querySelectorAll(".view").forEach(x=>x.classList.add("hidden"));
+const view=document.getElementById("view-"+name);
+if(view)view.classList.remove("hidden");
+document.querySelectorAll(".side-link").forEach(x=>x.classList.remove("active"));
+const selected=button||document.querySelector('[data-view="'+name+'"]');
+if(selected)selected.classList.add("active");
+if(name==="orders")loadOrders();
+if(name==="services")loadServices();
 }
 
-async function checkSession(){
-  try{
-    const user=await apiRequest("/api/me");
-
-    if(!user || !user.id || !user.username){
-      throw new Error("Invalid session response.");
-    }
-
-    currentUser=user;
-    updateNavigation(true);
-    return true;
-
-  }catch(error){
-    currentUser=null;
-    updateNavigation(false);
-    return false;
-  }
-}
-
-/* SIGN UP */
-$("signupForm").addEventListener("submit",async function(e){
-  e.preventDefault();
-
-  const username=$("signupUsername").value.trim();
-  const email=$("signupEmail").value.trim();
-  const password=$("signupPassword").value;
-  const confirm=$("confirmPassword").value;
-  const button=$("signupSubmit");
-
-  if(password!==confirm){
-    showMessage("signupMessage","Passwords do not match.","error");
-    return;
-  }
-
-  if(password.length<10){
-    showMessage("signupMessage","Password must contain at least 10 characters.","error");
-    return;
-  }
-
-  button.disabled=true;
-  button.textContent="Creating account...";
-
-  try{
-    const result=await apiRequest("/api/register","POST",{
-      username,email,password
-    });
-
-    const authenticated=await checkSession();
-
-    if(!authenticated){
-      showMessage(
-        "signupMessage",
-        "Account created, but your login session could not be confirmed. Please log in.",
-        "error"
-      );
-      return;
-    }
-
-    $("signupForm").reset();
-    showDashboard();
-
-  }catch(error){
-    showMessage("signupMessage",error.message,"error");
-  }finally{
-    button.disabled=false;
-    button.textContent="Create Account";
-  }
+async function loadServices(){
+try{
+serviceCatalog=await api("/api/services",{method:"GET"});
+const platformSelect=document.getElementById("orderPlatform");
+const current=platformSelect.value;
+platformSelect.innerHTML='<option value="">Select platform</option>';
+Object.keys(serviceCatalog).forEach(platform=>{
+const option=document.createElement("option");
+option.value=platform;
+option.textContent=platform.charAt(0).toUpperCase()+platform.slice(1);
+platformSelect.appendChild(option);
 });
+if(current&&serviceCatalog[current])platformSelect.value=current;
+updateServiceOptions();
 
-/* LOGIN */
-$("loginForm").addEventListener("submit",async function(e){
-  e.preventDefault();
-
-  const email=$("loginEmail").value.trim();
-  const password=$("loginPassword").value;
-  const button=$("loginSubmit");
-
-  button.disabled=true;
-  button.textContent="Logging in...";
-
-  try{
-    await apiRequest("/api/login","POST",{email,password});
-
-    const authenticated=await checkSession();
-
-    if(!authenticated){
-      throw new Error(
-        "Login was accepted, but the browser did not retain your session. Check cookie settings."
-      );
-    }
-
-    $("loginForm").reset();
-    showDashboard();
-
-  }catch(error){
-    showMessage("loginMessage",error.message,"error");
-  }finally{
-    button.disabled=false;
-    button.textContent="Login";
-  }
+const list=document.getElementById("servicesList");
+list.innerHTML="";
+Object.entries(serviceCatalog).forEach(([platform,services])=>{
+const card=document.createElement("div");
+card.className="service-item";
+const title=document.createElement("h3");
+title.textContent=platform.toUpperCase();
+const description=document.createElement("p");
+description.textContent=services.join(" • ");
+card.append(title,description);
+list.appendChild(card);
 });
+}catch(error){
+document.getElementById("servicesList").innerHTML='<div class="empty">Could not load services. Please refresh and try again.</div>';
+}
+}
 
-/* CUSTOMER ORDER HISTORY */
+function updateServiceOptions(){
+const platform=document.getElementById("orderPlatform").value;
+const select=document.getElementById("orderService");
+select.innerHTML='<option value="">Select service</option>';
+(serviceCatalog[platform]||[]).forEach(service=>{
+const option=document.createElement("option");
+option.value=service;
+option.textContent=service;
+select.appendChild(option);
+});
+}
+
+document.getElementById("orderPlatform").addEventListener("change",updateServiceOptions);
+
 async function loadOrders(){
-  const list=$("ordersList");
-  list.textContent="Loading orders...";
-
-  try{
-    const orders=await apiRequest("/api/orders");
-
-    $("totalOrders").textContent=orders.length;
-
-    if(!orders.length){
-      list.innerHTML='<div class="empty">You have not placed any orders yet.</div>';
-      return;
-    }
-
-    list.innerHTML="";
-
-    orders.forEach(order=>{
-      const item=document.createElement("div");
-      item.className="order-item";
-
-      const title=document.createElement("strong");
-      title.textContent="Order #"+order.id;
-
-      const details=document.createElement("p");
-      details.textContent=
-        order.platform+" · "+order.service+" · Quantity: "+order.quantity;
-
-      const status=document.createElement("p");
-      status.className="status";
-      status.textContent="Status: "+order.status;
-
-      const payment=document.createElement("p");
-      payment.textContent="Payment: "+order.payment_status;
-
-      item.append(title,details,status,payment);
-      list.appendChild(item);
-    });
-
-  }catch(error){
-    list.textContent="Could not load orders: "+error.message;
-  }
+try{
+myOrders=await api("/api/orders",{method:"GET"});
+renderOrders();
+}catch(error){
+document.getElementById("ordersList").innerHTML='<div class="empty">'+escapeHTML(error.message)+'</div>';
+document.getElementById("recentOrders").innerHTML='<div class="empty">Could not load orders.</div>';
+}
 }
 
-/* LOGOUT */
+function escapeHTML(value){
+return String(value??"").replace(/[&<>"']/g,char=>({
+"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+}[char]));
+}
+
+function renderOrders(){
+const total=myOrders.length;
+const pending=myOrders.filter(o=>!["Completed"].includes(o.status)).length;
+const completed=myOrders.filter(o=>o.status==="Completed").length;
+document.getElementById("totalOrders").textContent=total;
+document.getElementById("pendingOrders").textContent=pending;
+document.getElementById("completedOrders").textContent=completed;
+
+const markup=myOrders.length?`
+<div class="table-wrap"><table>
+<thead><tr><th>Order</th><th>Platform</th><th>Service</th><th>Quantity</th><th>Status</th></tr></thead>
+<tbody>${myOrders.map(o=>`
+<tr>
+<td>#${o.id}</td>
+<td>${escapeHTML(o.platform)}</td>
+<td>${escapeHTML(o.service)}</td>
+<td>${o.quantity}</td>
+<td><span class="status">${escapeHTML(o.status)}</span></td>
+</tr>`).join("")}</tbody>
+</table></div>`:'<div class="empty">You have not placed any orders yet.</div>';
+
+document.getElementById("ordersList").innerHTML=markup;
+document.getElementById("recentOrders").innerHTML=markup;
+}
+
+document.getElementById("orderForm").addEventListener("submit",async event=>{
+event.preventDefault();
+const button=document.getElementById("orderSubmit");
+const platform=document.getElementById("orderPlatform").value;
+const service=document.getElementById("orderService").value;
+const link=document.getElementById("orderLink").value.trim();
+const quantity=Number(document.getElementById("orderQuantity").value);
+
+if(!platform||!service){
+showMessage("orderMessage","Select a platform and service.","error");
+return;
+}
+if(!Number.isInteger(quantity)||quantity<1||quantity>100000){
+showMessage("orderMessage","Quantity must be between 1 and 100000.","error");
+return;
+}
+
+button.disabled=true;
+button.textContent="Submitting...";
+try{
+const result=await api("/api/orders",{
+method:"POST",
+body:JSON.stringify({platform,service,link,quantity})
+});
+showMessage("orderMessage","Order #"+result.order_id+" submitted. Status: "+result.status+". Payment and fulfillment are not yet automated.","success");
+document.getElementById("orderForm").reset();
+updateServiceOptions();
+await loadOrders();
+}catch(error){
+showMessage("orderMessage",error.message,"error");
+}finally{
+button.disabled=false;
+button.textContent="Submit Order";
+}
+});
+
+document.getElementById("loginForm").addEventListener("submit",async event=>{
+event.preventDefault();
+const button=document.getElementById("loginSubmit");
+button.disabled=true;
+button.textContent="Logging in...";
+try{
+await api("/api/login",{
+method:"POST",
+body:JSON.stringify({
+email:document.getElementById("loginEmail").value.trim(),
+password:document.getElementById("loginPassword").value
+})
+});
+const user=await api("/api/me",{method:"GET"});
+document.getElementById("loginForm").reset();
+setLoggedIn(user);
+}catch(error){
+showMessage("loginMessage",error.message,"error");
+}finally{
+button.disabled=false;
+button.textContent="Login";
+}
+});
+
+document.getElementById("signupForm").addEventListener("submit",async event=>{
+event.preventDefault();
+const username=document.getElementById("signupUsername").value.trim();
+const email=document.getElementById("signupEmail").value.trim();
+const password=document.getElementById("signupPassword").value;
+const confirm=document.getElementById("confirmPassword").value;
+const button=document.getElementById("signupSubmit");
+
+if(password!==confirm){
+showMessage("signupMessage","Passwords do not match.","error");
+return;
+}
+if(password.length<10){
+showMessage("signupMessage","Password must contain at least 10 characters.","error");
+return;
+}
+
+button.disabled=true;
+button.textContent="Creating account...";
+try{
+await api("/api/register",{
+method:"POST",
+body:JSON.stringify({username,email,password})
+});
+document.getElementById("signupForm").reset();
+showAuth("login");
+showMessage("loginMessage","Account created. Please log in.","success");
+}catch(error){
+showMessage("signupMessage",error.message,"error");
+}finally{
+button.disabled=false;
+button.textContent="Create Account";
+}
+});
+
 async function logout(){
-  try{
-    await apiRequest("/api/logout","POST");
-  }catch(error){
-    alert("Logout request failed: "+error.message);
-    return;
-  }
-
-  currentUser=null;
-  updateNavigation(false);
-  showHome();
+try{
+await api("/api/logout",{method:"POST",body:JSON.stringify({})});
+}catch(error){}
+currentUser=null;
+myOrders=[];
+document.getElementById("publicNav").classList.remove("hidden");
+document.getElementById("userNav").classList.add("hidden");
+showHome();
 }
 
-/* STARTUP: RESTORE SESSION */
-async function startApp(){
-  const loggedIn=await checkSession();
-
-  if(loggedIn){
-    showDashboard();
-  }else{
-    showHome();
-  }
+async function restoreSession(){
+try{
+const user=await api("/api/me",{method:"GET"});
+setLoggedIn(user);
+}catch(error){
+showHome();
+}
 }
 
-startApp();
+restoreSession();
 </script>
-
 </body>
 </html>
