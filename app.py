@@ -271,6 +271,85 @@ def services():
 
 @app.route("/api/integrations/zernio/verify", methods=["GET"])
 def verify_zernio():
+    
+# =========================================================
+# ZERNIO: PROFILES AND CONNECTED SOCIAL ACCOUNTS
+# =========================================================
+
+def zernio_request(path, method="GET", body=None):
+    api_key = os.environ.get("ZERNIO_API_KEY")
+    if not api_key:
+        return None, "ZERNIO_API_KEY is not configured."
+
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Accept": "application/json"
+    }
+
+    data = None
+    if body is not None:
+        headers["Content-Type"] = "application/json"
+        data = json.dumps(body).encode("utf-8")
+
+    req = Request(
+        "https://zernio.com/api" + path,
+        data=data,
+        headers=headers,
+        method=method
+    )
+
+    try:
+        with urlopen(req, timeout=25) as result:
+            payload = result.read().decode("utf-8")
+            return json.loads(payload), None
+
+    except HTTPError as exc:
+        try:
+            details = exc.read().decode("utf-8")
+        except Exception:
+            details = ""
+        app.logger.warning(
+            "Zernio API error %s: %s", exc.code, details[:1000]
+        )
+        return None, f"Zernio returned HTTP {exc.code}."
+
+    except (URLError, TimeoutError):
+        return None, "Could not connect to Zernio."
+
+    except (json.JSONDecodeError, UnicodeDecodeError):
+        return None, "Zernio returned invalid JSON."
+
+    except Exception:
+        app.logger.exception("Zernio request failed")
+        return None, "Zernio request failed."
+
+
+@app.route("/api/integrations/zernio/resources", methods=["GET"])
+def zernio_resources():
+    user, error = require_login()
+    if error:
+        return error
+
+    profiles, profile_error = zernio_request("/v1/profiles")
+    if profile_error:
+        return response(profile_error, 502)
+
+    accounts, account_error = zernio_request("/v1/accounts")
+    if account_error:
+        return response(account_error, 502)
+
+    profile_list = profiles.get("profiles", [])
+    account_list = accounts.get("accounts", [])
+
+    return jsonify({
+        "provider": "Zernio",
+        "connected": True,
+        "profiles": profile_list,
+        "accounts": account_list,
+        "profile_count": len(profile_list),
+        "account_count": len(account_list)
+    })
+
     user, error = require_login()
     if error:
         return error
