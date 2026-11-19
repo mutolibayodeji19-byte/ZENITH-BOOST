@@ -1,5 +1,6 @@
 
 import os
+import hmac
 from datetime import datetime, timezone
 from urllib.parse import urlparse
 
@@ -7,11 +8,26 @@ from flask import Flask, request, jsonify, send_from_directory, session
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 
+
+# =========================================================
+# APP CONFIGURATION
+# =========================================================
+
 app = Flask(__name__, static_folder=".", static_url_path="")
 
-database_url = os.environ.get("DATABASE_URL", "sqlite:///zenith_boost.db")
-database_url = database_url.replace("postgres://", "postgresql+psycopg://", 1)
-database_url = database_url.replace("postgresql://", "postgresql+psycopg://", 1)
+database_url = os.environ.get(
+    "DATABASE_URL",
+    "sqlite:///zenith_boost.db"
+)
+
+if database_url.startswith("postgres://"):
+    database_url = database_url.replace(
+        "postgres://", "postgresql+psycopg://", 1
+    )
+elif database_url.startswith("postgresql://"):
+    database_url = database_url.replace(
+        "postgresql://", "postgresql+psycopg://", 1
+    )
 
 app.config.update(
     SECRET_KEY=os.environ.get("SECRET_KEY"),
@@ -20,13 +36,20 @@ app.config.update(
     SQLALCHEMY_ENGINE_OPTIONS={"pool_pre_ping": True},
     SESSION_COOKIE_HTTPONLY=True,
     SESSION_COOKIE_SAMESITE="Lax",
-    SESSION_COOKIE_SECURE=True
+    SESSION_COOKIE_SECURE=os.environ.get(
+        "COOKIE_SECURE", "true"
+    ).lower() == "true"
 )
 
 if not app.config["SECRET_KEY"]:
     raise RuntimeError("SECRET_KEY environment variable is missing.")
 
 db = SQLAlchemy(app)
+
+
+# =========================================================
+# SERVICE CATALOG
+# =========================================================
 
 SERVICES = {
     "instagram": ["Likes", "Followers", "Comments"],
@@ -47,6 +70,10 @@ ALLOWED_DOMAINS = {
 }
 
 
+# =========================================================
+# DATABASE MODELS
+# =========================================================
+
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(40), unique=True, nullable=False)
@@ -60,7 +87,11 @@ class User(db.Model):
 
 class Order(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey("user.id"),
+        nullable=False
+    )
     platform = db.Column(db.String(30), nullable=False)
     service = db.Column(db.String(30), nullable=False)
     link = db.Column(db.String(500), nullable=False)
@@ -72,12 +103,73 @@ class Order(db.Model):
     )
 
 
+# Separate table: does not alter existing Order columns.
+class PaymentVerification(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    order_id = db.Column(
+        db.Integer,
+        db.ForeignKey("order.id"),
+        unique=True,
+        nullable=False
+    )
+    status = db.Column(db.String(30), default="Unverified")
+    payment_reference = db.Column(db.String(150))
+    admin_note = db.Column(db.Text)
+    verified_at = db.Column(db.DateTime(timezone=True))
+    created_at = db.Column(
+        db.DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc)
+    )
+
+
+class Fulfillment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    order_id = db.Column(
+        db.Integer,
+        db.ForeignKey("order.id"),
+        nullable=False,
+        unique=True
+    )
+    mode = db.Column(db.String(30), nullable=False)
+    status = db.Column(db.String(30), default="Queued")
+    provider = db.Column(db.String(100))
+    campaign_notes = db.Column(db.Text)
+    evidence_url = db.Column(db.String(500))
+    created_at = db.Column(
+        db.DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc)
+    )
+    updated_at = db.Column(
+        db.DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc)
+    )
+
+
+class FulfillmentLog(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    order_id = db.Column(db.Integer, nullable=False)
+    action = db.Column(db.String(100), nullable=False)
+    details = db.Column(db.Text)
+    created_at = db.Column(
+        db.DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc)
+    )
+
+
 with app.app_context():
     db.create_all()
 
 
+# =========================================================
+# COMMON HELPERS
+# =========================================================
+
 def response(message, status=200, **extra):
-    return jsonify({"message": message, **extra}), status
+    return jsonify({
+        "message": message,
+        **extra
+    }), status
 
 
 def current_user():
@@ -87,10 +179,62 @@ def current_user():
 
 def require_login():
     user = current_user()
+
     if not user:
         return None, response("Please log in first.", 401)
+
     return user, None
 
+
+def require_admin():
+    configured_key = os.environ.get("ADMIN_API_KEY")
+    supplied_key = request.headers.get("X-Admin-Key", "")
+
+    if not configured_key:
+        return response("Admin API is not configured.", 503)
+
+    if not hmac.compare_digest(
+        supplied_key.encode("utf-8"),
+        configured_key.encode("utf-8")
+    ):
+        return response("Unauthorized admin request.", 401)
+
+    return None
+
+
+def log_action(order_id, action, details=None):
+    db.session.add(FulfillmentLog(
+        order_id=order_id,
+        action=action,
+        details=details
+    ))
+
+
+def payment_is_verified(order_id):
+    payment = PaymentVerification.query.filter_by(
+        order_id=order_id
+    ).first()
+
+    return payment and payment.status == "Verified"
+
+
+def fulfillment_json(task):
+    return {
+        "id": task.id,
+        "order_id": task.order_id,
+        "mode": task.mode,
+        "status": task.status,
+        "provider": task.provider,
+        "campaign_notes": task.campaign_notes,
+        "evidence_url": task.evidence_url,
+        "created_at": task.created_at.isoformat(),
+        "updated_at": task.updated_at.isoformat()
+    }
+
+
+# =========================================================
+# WEBSITE AND HEALTH
+# =========================================================
 
 @app.route("/")
 def home():
@@ -101,13 +245,16 @@ def home():
 def health():
     try:
         db.session.execute(db.text("SELECT 1"))
+
         return jsonify({
             "status": "online",
             "project": "ZENITH BOOST",
             "database": "connected"
         })
+
     except Exception:
         app.logger.exception("Database health check failed")
+
         return jsonify({
             "status": "error",
             "project": "ZENITH BOOST",
@@ -119,6 +266,10 @@ def health():
 def services():
     return jsonify(SERVICES)
 
+
+# =========================================================
+# AUTHENTICATION
+# =========================================================
 
 @app.route("/api/register", methods=["POST"])
 def register():
@@ -155,8 +306,11 @@ def register():
     session.clear()
     session["user_id"] = user.id
 
-    return response("Account created successfully.", 201,
-                    username=user.username)
+    return response(
+        "Account created successfully.",
+        201,
+        username=user.username
+    )
 
 
 @app.route("/api/login", methods=["POST"])
@@ -186,6 +340,7 @@ def logout():
 @app.route("/api/me")
 def me():
     user, error = require_login()
+
     if error:
         return error
 
@@ -197,9 +352,14 @@ def me():
     })
 
 
+# =========================================================
+# CUSTOMER ORDERS
+# =========================================================
+
 @app.route("/api/orders", methods=["POST"])
 def create_order():
     user, error = require_login()
+
     if error:
         return error
 
@@ -249,7 +409,7 @@ def create_order():
     db.session.commit()
 
     return response(
-        "Order received and awaiting review.",
+        "Order received and awaiting payment review.",
         201,
         order_id=order.id,
         status=order.status
@@ -259,6 +419,7 @@ def create_order():
 @app.route("/api/orders", methods=["GET"])
 def my_orders():
     user, error = require_login()
+
     if error:
         return error
 
@@ -266,18 +427,319 @@ def my_orders():
         user_id=user.id
     ).order_by(Order.created_at.desc()).all()
 
-    return jsonify([
-        {
+    results = []
+
+    for order in orders:
+        payment = PaymentVerification.query.filter_by(
+            order_id=order.id
+        ).first()
+
+        task = Fulfillment.query.filter_by(
+            order_id=order.id
+        ).first()
+
+        results.append({
             "id": order.id,
             "platform": order.platform,
             "service": order.service,
+            "link": order.link,
             "quantity": order.quantity,
             "status": order.status,
+            "payment_status": payment.status if payment else "Unverified",
+            "fulfillment": fulfillment_json(task) if task else None,
             "created_at": order.created_at.isoformat()
+        })
+
+    return jsonify(results)
+
+
+# =========================================================
+# ADMIN: PAYMENT CONFIRMATION
+# =========================================================
+
+@app.route(
+    "/api/engine/verify-payment/<int:order_id>",
+    methods=["POST"]
+)
+def verify_payment(order_id):
+    error = require_admin()
+
+    if error:
+        return error
+
+    order = db.session.get(Order, order_id)
+
+    if not order:
+        return response("Order not found.", 404)
+
+    data = request.get_json(silent=True) or {}
+
+    reference = str(
+        data.get("payment_reference", "")
+    ).strip()
+
+    note = str(data.get("admin_note", "")).strip()
+
+    if not reference:
+        return response("Payment reference is required.", 400)
+
+    if len(reference) > 150:
+        return response("Payment reference is too long.", 400)
+
+    payment = PaymentVerification.query.filter_by(
+        order_id=order_id
+    ).first()
+
+    if not payment:
+        payment = PaymentVerification(order_id=order_id)
+        db.session.add(payment)
+
+    payment.status = "Verified"
+    payment.payment_reference = reference
+    payment.admin_note = note
+    payment.verified_at = datetime.now(timezone.utc)
+
+    order.status = "Paid - Awaiting Fulfillment"
+
+    log_action(
+        order_id,
+        "Payment manually confirmed",
+        "Reference: " + reference
+    )
+
+    db.session.commit()
+
+    return response(
+        "Payment marked as verified. Ensure the transaction was checked externally.",
+        order_id=order_id,
+        payment_status=payment.status
+    )
+
+
+# =========================================================
+# ADMIN: FULFILLMENT ROUTER
+# =========================================================
+
+@app.route(
+    "/api/engine/route/<int:order_id>",
+    methods=["POST"]
+)
+def route_fulfillment(order_id):
+    error = require_admin()
+
+    if error:
+        return error
+
+    order = db.session.get(Order, order_id)
+
+    if not order:
+        return response("Order not found.", 404)
+
+    if not payment_is_verified(order_id):
+        return response(
+            "Payment must be verified before fulfillment.",
+            403
+        )
+
+    if Fulfillment.query.filter_by(order_id=order_id).first():
+        return response(
+            "This order already has a fulfillment task.",
+            409
+        )
+
+    data = request.get_json(silent=True) or {}
+
+    mode = str(data.get("mode", "")).lower()
+    notes = str(data.get("campaign_notes", "")).strip()
+
+    if mode not in ["campaign", "provider"]:
+        return response(
+            "Mode must be campaign or provider.",
+            400
+        )
+
+    # Provider execution is intentionally blocked until
+    # a real provider API has been configured and tested.
+    if mode == "provider":
+        return response(
+            "Provider integration is not configured yet. "
+            "No provider order has been submitted.",
+            501
+        )
+
+    task = Fulfillment(
+        order_id=order_id,
+        mode="campaign",
+        status="Queued",
+        campaign_notes=notes
+    )
+
+    order.status = "Queued for Campaign"
+
+    db.session.add(task)
+
+    log_action(
+        order_id,
+        "Campaign fulfillment queued",
+        notes or "No campaign notes supplied."
+    )
+
+    db.session.commit()
+
+    return response(
+        "Campaign task queued.",
+        201,
+        task=fulfillment_json(task)
+    )
+
+
+# =========================================================
+# ADMIN: FULFILLMENT QUEUE
+# =========================================================
+
+@app.route("/api/engine/queue", methods=["GET"])
+def fulfillment_queue():
+    error = require_admin()
+
+    if error:
+        return error
+
+    tasks = Fulfillment.query.order_by(
+        Fulfillment.created_at.desc()
+    ).all()
+
+    results = []
+
+    for task in tasks:
+        order = db.session.get(Order, task.order_id)
+
+        results.append({
+            **fulfillment_json(task),
+            "order": {
+                "platform": order.platform,
+                "service": order.service,
+                "link": order.link,
+                "quantity": order.quantity
+            } if order else None
+        })
+
+    return jsonify(results)
+
+
+# =========================================================
+# ADMIN: UPDATE FULFILLMENT
+# =========================================================
+
+@app.route(
+    "/api/engine/update/<int:task_id>",
+    methods=["POST"]
+)
+def update_fulfillment(task_id):
+    error = require_admin()
+
+    if error:
+        return error
+
+    task = db.session.get(Fulfillment, task_id)
+
+    if not task:
+        return response("Fulfillment task not found.", 404)
+
+    data = request.get_json(silent=True) or {}
+
+    new_status = str(data.get("status", "")).strip().title()
+    notes = str(data.get("campaign_notes", "")).strip()
+    evidence_url = str(data.get("evidence_url", "")).strip()
+
+    allowed_statuses = [
+        "Queued",
+        "Processing",
+        "Completed",
+        "Partial",
+        "Failed",
+        "Cancelled"
+    ]
+
+    if new_status not in allowed_statuses:
+        return response("Invalid fulfillment status.", 400)
+
+    if new_status == "Completed" and not notes:
+        return response(
+            "Completion notes are required before marking completed.",
+            400
+        )
+
+    if evidence_url:
+        parsed = urlparse(evidence_url)
+
+        if parsed.scheme != "https" or not parsed.hostname:
+            return response("Evidence URL must be a valid HTTPS URL.", 400)
+
+    task.status = new_status
+
+    if notes:
+        task.campaign_notes = notes
+
+    if evidence_url:
+        task.evidence_url = evidence_url
+
+    order = db.session.get(Order, task.order_id)
+
+    if order:
+        order.status = new_status
+
+    log_action(
+        task.order_id,
+        "Fulfillment status changed",
+        "Status: " + new_status + ". " + notes
+    )
+
+    db.session.commit()
+
+    return response(
+        "Fulfillment task updated.",
+        task=fulfillment_json(task)
+    )
+
+
+# =========================================================
+# ADMIN: ORDER AUDIT LOGS
+# =========================================================
+
+@app.route(
+    "/api/engine/logs/<int:order_id>",
+    methods=["GET"]
+)
+def fulfillment_logs(order_id):
+    error = require_admin()
+
+    if error:
+        return error
+
+    order = db.session.get(Order, order_id)
+
+    if not order:
+        return response("Order not found.", 404)
+
+    logs = FulfillmentLog.query.filter_by(
+        order_id=order_id
+    ).order_by(FulfillmentLog.created_at.desc()).all()
+
+    return jsonify([
+        {
+            "id": log.id,
+            "order_id": log.order_id,
+            "action": log.action,
+            "details": log.details,
+            "created_at": log.created_at.isoformat()
         }
-        for order in orders
+        for log in logs
     ])
 
+
+# =========================================================
+# START SERVER
+# =========================================================
 
 if __name__ == "__main__":
     app.run(
