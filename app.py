@@ -41,6 +41,25 @@ app.config.update(
     ).lower() == "true"
 )
 
+# ZENITH BOOST FRONTEND CORS CONFIGURATION
+ALLOWED_FRONTENDS = {
+    "https://zenith-boost.onrender.com"
+}
+
+@app.after_request
+def add_cors_headers(response):
+    origin = request.headers.get("Origin")
+
+    if origin in ALLOWED_FRONTENDS:
+        response.headers["Access-Control-Allow-Origin"] = origin
+        response.headers["Access-Control-Allow-Credentials"] = "true"
+        response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
+        response.headers["Access-Control-Allow-Headers"] = "Content-Type"
+        response.headers["Access-Control-Max-Age"] = "600"
+        response.headers["Vary"] = "Origin"
+
+    return response
+
 if not app.config["SECRET_KEY"]:
     raise RuntimeError("SECRET_KEY environment variable is missing.")
 
