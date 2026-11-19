@@ -29,17 +29,17 @@ elif database_url.startswith("postgresql://"):
         "postgresql://", "postgresql+psycopg://", 1
     )
 
+
 app.config.update(
     SECRET_KEY=os.environ.get("SECRET_KEY"),
     SQLALCHEMY_DATABASE_URI=database_url,
     SQLALCHEMY_TRACK_MODIFICATIONS=False,
     SQLALCHEMY_ENGINE_OPTIONS={"pool_pre_ping": True},
     SESSION_COOKIE_HTTPONLY=True,
-    SESSION_COOKIE_SAMESITE="Lax",
-    SESSION_COOKIE_SECURE=os.environ.get(
-        "COOKIE_SECURE", "true"
-    ).lower() == "true"
+    SESSION_COOKIE_SAMESITE="None",
+    SESSION_COOKIE_SECURE=True
 )
+
 
 # ZENITH BOOST FRONTEND CORS CONFIGURATION
 ALLOWED_FRONTENDS = {
