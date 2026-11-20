@@ -488,11 +488,11 @@ def create_order():
     db.session.commit()
 
     return response(
-        "Order received and awaiting payment review.",
-        201,
-        order_id=order.id,
-        status=order.status
-    )
+    "Order received and awaiting payment review.",
+    201,
+    order_id=order.id,
+    order_status=order.status
+        )
 
 
 @app.route("/api/orders", methods=["GET"])
