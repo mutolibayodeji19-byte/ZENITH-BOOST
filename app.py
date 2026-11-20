@@ -170,8 +170,8 @@ with app.app_context():
 # COMMON HELPERS
 # =========================================================
 
-def response(message, status=200, **extra):
-    return jsonify({"message": message, **extra}), status
+def response(message, http_status=200, **extra):
+    return jsonify({"message": message, **extra}), http_status
 
 
 def current_user():
@@ -491,7 +491,7 @@ def create_order():
     "Order received and awaiting payment review.",
     201,
     order_id=order.id,
-    order_status=order.status
+    status=order.status
         )
 
 
