@@ -263,21 +263,14 @@ def services():
     return jsonify(SERVICES)
 
 
+
 # =========================================================
 # ZERNIO INTEGRATION
-# This endpoint verifies credentials only. It does not create
-# campaigns, purchase likes, or claim that fulfillment works.
-# =========================================================
-
-@app.route("/api/integrations/zernio/verify", methods=["GET"])
-def verify_zernio():
-    
-# =========================================================
-# ZERNIO: PROFILES AND CONNECTED SOCIAL ACCOUNTS
 # =========================================================
 
 def zernio_request(path, method="GET", body=None):
     api_key = os.environ.get("ZERNIO_API_KEY")
+
     if not api_key:
         return None, "ZERNIO_API_KEY is not configured."
 
@@ -304,13 +297,7 @@ def zernio_request(path, method="GET", body=None):
             return json.loads(payload), None
 
     except HTTPError as exc:
-        try:
-            details = exc.read().decode("utf-8")
-        except Exception:
-            details = ""
-        app.logger.warning(
-            "Zernio API error %s: %s", exc.code, details[:1000]
-        )
+        app.logger.warning("Zernio HTTP error: %s", exc.code)
         return None, f"Zernio returned HTTP {exc.code}."
 
     except (URLError, TimeoutError):
@@ -324,6 +311,28 @@ def zernio_request(path, method="GET", body=None):
         return None, "Zernio request failed."
 
 
+@app.route("/api/integrations/zernio/verify", methods=["GET"])
+def verify_zernio():
+    user, error = require_login()
+    if error:
+        return error
+
+    payload, api_error = zernio_request("/v1/auth/verify")
+
+    if api_error:
+        return response(api_error, 502)
+
+    if payload.get("valid") is True:
+        return jsonify({
+            "provider": "Zernio",
+            "connected": True,
+            "auth_type": payload.get("authType"),
+            "message": "Zernio API authentication successful."
+        })
+
+    return response("Zernio did not validate the API credentials.", 502)
+
+
 @app.route("/api/integrations/zernio/resources", methods=["GET"])
 def zernio_resources():
     user, error = require_login()
@@ -331,10 +340,12 @@ def zernio_resources():
         return error
 
     profiles, profile_error = zernio_request("/v1/profiles")
+
     if profile_error:
         return response(profile_error, 502)
 
     accounts, account_error = zernio_request("/v1/accounts")
+
     if account_error:
         return response(account_error, 502)
 
@@ -349,54 +360,6 @@ def zernio_resources():
         "profile_count": len(profile_list),
         "account_count": len(account_list)
     })
-
-    user, error = require_login()
-    if error:
-        return error
-
-    api_key = os.environ.get("ZERNIO_API_KEY")
-    if not api_key:
-        return response("Zernio API key is not configured in Render.", 503)
-
-    req = Request(
-        "https://zernio.com/api/v1/auth/verify",
-        headers={
-            "Authorization": f"Bearer {api_key}",
-            "Accept": "application/json"
-        },
-        method="GET"
-    )
-
-    try:
-        with urlopen(req, timeout=20) as result:
-            payload = json.loads(result.read().decode("utf-8"))
-
-        if payload.get("valid") is True:
-            return jsonify({
-                "provider": "Zernio",
-                "connected": True,
-                "auth_type": payload.get("authType"),
-                "message": "Zernio API authentication successful."
-            })
-
-        return response("Zernio did not validate the supplied credential.", 502)
-
-    except HTTPError as exc:
-        if exc.code == 401:
-            return response("Zernio rejected the API key. Check it in Render.", 502)
-        app.logger.warning("Zernio verification HTTP error: %s", exc.code)
-        return response("Zernio returned an API error.", 502)
-
-    except (URLError, TimeoutError):
-        return response("Could not reach Zernio. Try again later.", 503)
-
-    except (json.JSONDecodeError, UnicodeDecodeError):
-        app.logger.exception("Zernio returned an unreadable response")
-        return response("Zernio returned an unreadable response.", 502)
-
-    except Exception:
-        app.logger.exception("Zernio verification failed")
-        return response("Zernio verification failed.", 500)
 
 
 # =========================================================
