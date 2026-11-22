@@ -161,7 +161,22 @@ class FulfillmentLog(db.Model):
         db.DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc)
     )
-
+class Service(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    service_key = db.Column(db.String(100), unique=True, nullable=False)
+    platform = db.Column(db.String(30), nullable=False)
+    name = db.Column(db.String(100), nullable=False)
+    category = db.Column(db.String(50), nullable=False)
+    min_quantity = db.Column(db.Integer, default=1, nullable=False)
+    max_quantity = db.Column(db.Integer, default=100000, nullable=False)
+    price_per_1000 = db.Column(db.Float, default=0, nullable=False)
+    fulfillment_type = db.Column(db.String(30), nullable=False)
+    provider_service_id = db.Column(db.String(100))
+    active = db.Column(db.Boolean, default=False, nullable=False)
+    created_at = db.Column(
+        db.DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc)
+    )
 
 with app.app_context():
     db.create_all()
