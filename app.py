@@ -341,7 +341,31 @@ def create_service():
     db.session.commit()
 
     return response("Service created successfully.", 201, service_id=service.id)
+    
+@app.route("/api/admin/services/<int:service_id>/status", methods=["POST"])
+def update_service_status(service_id):
+    admin_error = require_admin()
+    if admin_error is not None:
+        return admin_error
 
+    data = request.get_json(silent=True) or {}
+
+    if "active" not in data or not isinstance(data["active"], bool):
+        return response("A boolean active value is required.", 400)
+
+    service = db.session.get(Service, service_id)
+
+    if service is None:
+        return response("Service not found.", 404)
+
+    service.active = data["active"]
+    db.session.commit()
+
+    return response(
+        "Service status updated successfully.",
+        active=service.active,
+        service_id=service.id
+    )
 # =========================================================
 # ZERNIO INTEGRATION
 # =========================================================
