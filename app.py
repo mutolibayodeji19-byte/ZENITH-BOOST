@@ -294,7 +294,50 @@ def get_services():
             for s in services
         ]
     )
+@app.route("/api/admin/services", methods=["POST"])
+def create_service():
+    if not require_admin():
+        return response("Admin access required.", 403)
 
+    data = request.get_json(silent=True) or {}
+
+    required = [
+        "service_key", "platform", "name",
+        "category", "fulfillment_type"
+    ]
+
+    if any(not data.get(field) for field in required):
+        return response("Missing required fields.", 400)
+
+    if data["fulfillment_type"] not in ["provider", "campaign"]:
+        return response("Invalid fulfillment type.", 400)
+
+    if Service.query.filter_by(service_key=data["service_key"]).first():
+        return response("Service key already exists.", 409)
+
+    service = Service(
+        service_key=data["service_key"],
+        platform=data["platform"],
+        name=data["name"],
+        category=data["category"],
+        min_quantity=int(data.get("min_quantity", 1)),
+        max_quantity=int(data.get("max_quantity", 100000)),
+        price_per_1000=float(data.get("price_per_1000", 0)),
+        fulfillment_type=data["fulfillment_type"],
+        provider_service_id=data.get("provider_service_id"),
+        active=bool(data.get("active", False))
+    )
+
+    if service.min_quantity < 1 or service.max_quantity < service.min_quantity:
+        return response("Invalid quantity limits.", 400)
+
+    if service.price_per_1000 < 0:
+        return response("Price cannot be negative.", 400)
+
+    db.session.add(service)
+    db.session.commit()
+
+    return response("Service created successfully.", 201, service_id=service.id)
 
 
 # =========================================================
