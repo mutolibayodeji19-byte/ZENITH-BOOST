@@ -294,11 +294,11 @@ def get_services():
             }
             for s in services
         ]
-    )
-@app.route("/api/admin/services", methods=["POST"])
+    )@app.route("/api/admin/services", methods=["POST"])
 def create_service():
-    if not require_admin():
-        return response("Admin access required.", 403)
+    admin_error = require_admin()
+    if admin_error is not None:
+        return admin_error
 
     data = request.get_json(silent=True) or {}
 
@@ -339,7 +339,6 @@ def create_service():
     db.session.commit()
 
     return response("Service created successfully.", 201, service_id=service.id)
-
 
 # =========================================================
 # ZERNIO INTEGRATION
