@@ -271,11 +271,29 @@ def health():
             "project": "ZENITH BOOST",
             "database": "disconnected"
         }), 503
+@app.route("/api/services", methods=["GET"])
+def get_services():
+    services = Service.query.filter_by(
+        active=True
+    ).order_by(Service.platform, Service.name).all()
 
-
-@app.route("/api/services")
-def services():
-    return jsonify(SERVICES)
+    return response(
+        "Services loaded successfully.",
+        services=[
+            {
+                "id": s.id,
+                "service_key": s.service_key,
+                "platform": s.platform,
+                "name": s.name,
+                "category": s.category,
+                "min_quantity": s.min_quantity,
+                "max_quantity": s.max_quantity,
+                "price_per_1000": s.price_per_1000,
+                "fulfillment_type": s.fulfillment_type
+            }
+            for s in services
+        ]
+    )
 
 
 
