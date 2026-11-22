@@ -294,7 +294,9 @@ def get_services():
             }
             for s in services
         ]
-    )@app.route("/api/admin/services", methods=["POST"])
+    )
+
+@app.route("/api/admin/services", methods=["POST"])
 def create_service():
     admin_error = require_admin()
     if admin_error is not None:
