@@ -7,6 +7,184 @@
 <meta name="theme-color" content="#080f20">
 <title>ZENITH BOOST — Customer Dashboard</title>
 
+/* ZENITH BOOST — WHITE & BLUE REDESIGN */
+:root {
+  --bg: #f5f8ff;
+  --surface: #ffffff;
+  --surface2: #f0f5ff;
+  --blue: #2563eb;
+  --cyan: #38bdf8;
+  --text: #172554;
+  --muted: #64748b;
+  --border: #e2e8f0;
+  --green: #16a34a;
+  --red: #dc2626;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: Inter, Arial, sans-serif;
+}
+
+header {
+  background: rgba(255,255,255,.96);
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 2px 12px #0f172a08;
+}
+
+.logo { color: #172554; }
+.logo span { color: var(--blue); }
+
+.btn {
+  background: var(--blue);
+  border-radius: 10px;
+  box-shadow: 0 5px 12px #2563eb20;
+  transition: .2s ease;
+}
+
+.btn:hover {
+  background: #1d4ed8;
+  transform: translateY(-2px);
+}
+
+.btn-outline {
+  background: white;
+  color: var(--blue);
+  border: 1px solid #bfdbfe;
+  box-shadow: none;
+}
+
+nav button { color: var(--muted); }
+nav button:hover { color: var(--blue); }
+
+.home {
+  background:
+    radial-gradient(ellipse at 85% 20%, #bfdbfe80, transparent 50%),
+    linear-gradient(120deg,#eff6ff,#ffffff);
+  padding-top: 100px;
+  padding-bottom: 100px;
+}
+
+.home h1 { color: #172554; }
+.home h1 span { color: var(--blue); }
+.home p { color: #64748b; }
+
+section { background: transparent; }
+
+.card,.platform,.auth-card,.stat,.panel {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: 0 5px 20px #0f172a08;
+}
+
+.platform {
+  transition: .2s ease;
+}
+.platform:hover {
+  transform: translateY(-3px);
+  border-color: #93c5fd;
+}
+
+.auth-card { box-shadow: 0 15px 45px #1e40af12; }
+.auth-card h2 { color: #172554; }
+
+.field label { color: #334155; }
+
+.field input,.field select {
+  background: #f8fafc;
+  color: #172554;
+  border: 1px solid #dbe3ef;
+  border-radius: 10px;
+}
+
+.field input:focus,.field select:focus {
+  border-color: var(--blue);
+  background: white;
+  box-shadow: 0 0 0 3px #2563eb15;
+}
+
+.sidebar {
+  background: white;
+  border-right: 1px solid var(--border);
+}
+
+.sidebar h3 { color: #94a3b8; }
+
+.side-link {
+  color: #64748b;
+  border-radius: 10px;
+}
+
+.side-link.active,.side-link:hover {
+  background: #eff6ff;
+  color: var(--blue);
+}
+
+.main-content { background: #f8faff; }
+.welcome h1 { color: #172554; }
+
+.stat h2 { color: var(--blue); }
+
+.service-item {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 13px;
+  transition: .2s ease;
+}
+
+.service-item:hover {
+  border-color: #93c5fd;
+  transform: translateY(-2px);
+}
+
+.service-item h3 { color: #1e3a8a; }
+.service-item p { color: #64748b; }
+
+th { color: #64748b; }
+th,td { border-bottom-color: #e2e8f0; }
+
+.status {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border-radius: 20px;
+}
+
+.empty {
+  background: #f8fafc;
+  color: #64748b;
+}
+
+.hint { color: #64748b; }
+
+footer {
+  background: white;
+  border-top: 1px solid var(--border);
+  color: #64748b;
+}
+
+/* Smooth page transitions */
+.page.active,.auth-wrap.active {
+  animation: pageEnter .3s ease;
+}
+
+.view:not(.hidden) {
+  animation: pageEnter .25s ease;
+}
+
+@keyframes pageEnter {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Mobile */
+@media(max-width:750px) {
+  .home { padding: 65px 6%; }
+  .main-content { background: #f8faff; }
+  .sidebar { background: white; }
+}
+
 <style>
 :root{
 --bg:#080f20;
