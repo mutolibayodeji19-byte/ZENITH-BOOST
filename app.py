@@ -875,7 +875,9 @@ def fulfillment_logs(order_id):
 # =========================================================
 # START SERVER
 # =========================================================
+from paystack_wallet import register_paystack_wallet
 
+register_paystack_wallet(app, db, User, current_user)
 if __name__ == "__main__":
     app.run(
         host="0.0.0.0",
