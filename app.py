@@ -544,6 +544,7 @@ def me():
 # CUSTOMER ORDERS
 # =========================================================
 
+
 @app.route("/api/orders", methods=["POST"])
 def create_order():
     user, error = require_login()
@@ -551,8 +552,9 @@ def create_order():
         return error
 
     data = request.get_json(silent=True) or {}
-    platform = str(data.get("platform", "")).lower()
-    service = str(data.get("service", "")).strip()
+
+    platform = str(data.get("platform", "")).strip().lower()
+    service_input = str(data.get("service", "")).strip()
     link = str(data.get("link", "")).strip()
 
     try:
@@ -560,19 +562,53 @@ def create_order():
     except (TypeError, ValueError):
         return response("Invalid quantity.", 400)
 
-    if platform not in SERVICES:
-        return response("Invalid platform.", 400)
-    if service not in SERVICES[platform]:
-        return response("Invalid service.", 400)
-    if not 1 <= quantity <= 100000:
-        return response("Quantity must be between 1 and 100000.", 400)
+    if not platform or not service_input:
+        return response("Platform and service are required.", 400)
+
+    selected_service = Service.query.filter(
+        Service.platform == platform,
+        Service.active.is_(True),
+        db.or_(
+            db.func.lower(Service.name) == service_input.lower(),
+            db.func.lower(Service.service_key) == service_input.lower()
+        )
+    ).first()
+
+    if selected_service is None:
+        return response("Service is unavailable for this platform.", 400)
+
+    if not (
+        selected_service.min_quantity
+        <= quantity
+        <= selected_service.max_quantity
+    ):
+        return response(
+            f"Quantity must be between "
+            f"{selected_service.min_quantity} and "
+            f"{selected_service.max_quantity}.",
+            400
+        )
+
+    allowed_domains = ALLOWED_DOMAINS.get(platform)
+
+    if platform == "whatsapp":
+        allowed_domains = [
+            "whatsapp.com",
+            "www.whatsapp.com"
+        ]
+
+    if not allowed_domains:
+        return response("Unsupported platform.", 400)
+
     if len(link) > 500:
         return response("Link is too long.", 400)
 
     parsed = urlparse(link)
+
     if (
         parsed.scheme != "https"
-        or parsed.hostname not in ALLOWED_DOMAINS[platform]
+        or not parsed.hostname
+        or parsed.hostname.lower() not in allowed_domains
         or parsed.username
         or parsed.password
     ):
@@ -581,20 +617,21 @@ def create_order():
     order = Order(
         user_id=user.id,
         platform=platform,
-        service=service,
+        service=selected_service.name,
         link=link,
         quantity=quantity,
         status="Pending"
     )
+
     db.session.add(order)
     db.session.commit()
 
     return response(
-    "Order received and awaiting payment review.",
-    201,
-    order_id=order.id,
-    status=order.status
-        )
+        "Order received and awaiting payment review.",
+        201,
+        order_id=order.id,
+        status=order.status
+    )
 
 
 @app.route("/api/orders", methods=["GET"])
