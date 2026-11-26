@@ -920,3 +920,41 @@ if __name__ == "__main__":
         host="0.0.0.0",
         port=int(os.environ.get("PORT", 5000))
     )
+@app.route("/api/admin/services/price", methods=["POST"])
+def update_service_price():
+    admin_error = require_admin()
+    if admin_error is not None:
+        return admin_error
+
+    data = request.get_json(silent=True) or {}
+
+    service_key = str(data.get("service_key", "")).strip()
+    price = data.get("price_per_1000")
+
+    if service_key != "tiktok-likes":
+        return response("Invalid service key.", 400)
+
+    try:
+        price = float(price)
+    except (TypeError, ValueError):
+        return response("Invalid price.", 400)
+
+    if price < 0:
+        return response("Price cannot be negative.", 400)
+
+    service = Service.query.filter_by(
+        service_key="tiktok-likes"
+    ).first()
+
+    if service is None:
+        return response("Service not found.", 404)
+
+    service.price_per_1000 = price
+    db.session.commit()
+
+    return response(
+        "TikTok Likes price updated successfully.",
+        200,
+        service_key=service.service_key,
+        price_per_1000=service.price_per_1000
+    )
